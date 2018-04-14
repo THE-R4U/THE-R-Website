@@ -1,4 +1,4 @@
-baseurl = "the-r4u.netlify.com"
+baseurl = "http://the-r4u.netlify.com"
 title = "THE-R"
 languageCode = "en-us"
 paginate = "10" # Number of posts per page
@@ -7,11 +7,17 @@ disqusShortname = "" # Enable comments by entering your Disqus shortname
 googleAnalytics = "" # Enable Google Analytics by entering your tracking id
 ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
 
+[permalinks]
+    post = "/:year/:month/:day/:slug/"
+
 [Author]
     name = "THE-R"
-    bio = "THE-R 의 편집자 입니다"
+    bio = "THE-R 편집자 입니다"
     avatar = "img/THE-R.jpg"
 
+[[menu.main]]
+    name = "카테고리"
+    url = "/categories/"
 [[menu.main]]
     name = "GitHub"
     url = "https://github.com/THE-R4U"
@@ -31,7 +37,9 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
     authorbox = true
     post_navigation = true
     postSections = ["post", "R 패키지"]
+    dateFormat = "2006/01/02"
     #dateformat = "12-04-2018" # change the format of dates
+    hasCJKLanguage = true
         
 [Params.widgets]
     search = true # Enable "Search" widget
@@ -42,9 +50,15 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
     tags_counter = true # Enable counter for each tag in "Tags" widget (disabled by default)
 
     # Enable "Social" widget, if any of "social_*" set a value
-    social_facebook = "jmhome@naver.com"
+    social_facebook = "jinhoon.an"
     social_twitter = "The_R_blog"
     social_linkedin = "irichgreen"
     social_github = "the-r4u"
     social_email = "ceo@the-r.kr"
     social_google_plus = "profileid"
+    
+[params.logo]
+    url = "img/THE-R.jpg"
+    width = 50
+    height = 50
+    alt = "Logo"
