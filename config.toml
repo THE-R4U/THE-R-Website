@@ -1,10 +1,10 @@
-baseurl = "http://the-r4u.netlify.com"
+baseurl = "http://the-r.netlify.com"
 title = "THE-R"
 languageCode = "en-us"
 paginate = "10" # Number of posts per page
 theme = "mainroad"
-disqusShortname = "" # Enable comments by entering your Disqus shortname
-googleAnalytics = "" # Enable Google Analytics by entering your tracking id
+disqusShortname = "THE-R"
+googleAnalytics = "UA-117555860-1"
 ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
 
 [permalinks]
@@ -37,8 +37,7 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
     authorbox = true
     post_navigation = true
     postSections = ["post", "R 패키지"]
-    dateFormat = "2006/01/02"
-    #dateformat = "12-04-2018" # change the format of dates
+    dateFormat = "2006-01-02"
     hasCJKLanguage = true
         
 [Params.widgets]
@@ -50,7 +49,7 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
     tags_counter = true # Enable counter for each tag in "Tags" widget (disabled by default)
 
     # Enable "Social" widget, if any of "social_*" set a value
-    social_facebook = "jinhoon.an"
+    social_facebook = "THER4U"
     social_twitter = "The_R_blog"
     social_linkedin = "irichgreen"
     social_github = "the-r4u"
