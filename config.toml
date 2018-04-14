@@ -1,4 +1,4 @@
-baseurl = "/"
+baseurl = "the-r4u.netlify.com"
 title = "THE-R"
 languageCode = "en-us"
 paginate = "10" # Number of posts per page
@@ -9,12 +9,9 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
 
 [Author]
     name = "THE-R"
-    bio = "THE-R's true identity is unknown. Maybe he is a successful blogger or writer. Nobody knows it."
-    avatar = "img/avatar.png"
+    bio = "THE-R 의 편집자 입니다"
+    avatar = "img/THE-R.jpg"
 
-[[menu.main]]
-    name = "R 패키지"
-    url = "/R 패키지/"
 [[menu.main]]
     name = "GitHub"
     url = "https://github.com/THE-R4U"
