@@ -7,9 +7,9 @@
 <meta name="description" content=" R 데이터분석에 필요한 패키지 활용, 교육정보 제공">
 <meta name="generator" content="Hugo 0.38.1" />
 <meta property="og:title" content="[Kaggle] Overwatch Analysis" />
-<meta property="og:description" content="title: &ldquo;Overwatch: who should I main ?&rdquo; author: &ldquo;Jonathan Bouchet&rdquo; date: &ldquo;2018-04-15&rdquo; output: html_document: fig_width: 10 fig_height: 7 toc: yes number_sections : yes
-code_folding: show 
-#load packages and csv file library(ggplot2) library(dplyr) library(gridExtra) library(fmsb) library(ggthemes) library(ggridges) library(RColorBrewer) library(grid) library(gridExtra) library(ggrepel) library(GGally) library(gplots) library(ggdendro) library(factoextra) library(NbClust) library(corrplot) library(corrgram)  _warning: according the data the dataset was posted, I estimated it to correspond to patch 1.8.0.2(February 28, 2017), so the data here may not reflect the actual characteristics of the Heroes_" />
+<meta property="og:description" content="#load packages and csv file library(ggplot2) library(dplyr) library(gridExtra) library(fmsb) library(ggthemes) library(ggridges) library(RColorBrewer) library(grid) library(gridExtra) library(ggrepel) library(GGally) library(gplots) library(ggdendro) library(factoextra) library(NbClust) library(corrplot) library(corrgram) warning: according the data the dataset was posted, I estimated it to correspond to patch 1.8.0.2(February 28, 2017), so the data here may not reflect the actual characteristics of the Heroes
+Motivation There are 4 types of classes in Overwatch (wikia) :
+ Offense: main objective is to scout the area, harass the opposing team, and press the objective." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="/2018/04/15/kaggle-overwatch-analysis/" />
 
@@ -82,25 +82,10 @@ ga('send', 'pageview');
 			</p>
 		</header>
 		<div class="post__content clearfix">
-			
-
-<hr />
-
-<p>title: &ldquo;Overwatch: who should I main ?&rdquo;
-author: &ldquo;Jonathan Bouchet&rdquo;
-date: &ldquo;2018-04-15&rdquo;
-output:
- html_document:
-    fig_width: 10
-    fig_height: 7
-    toc: yes
-    number_sections : yes</p>
-
-<h2 id="code-folding-show">code_folding: show</h2>
-
-<p><center><img src="http://tca-esports.com/news/overwatch_banner.png"></center></p>
-
-<pre><code class="language-r">#load packages and csv file
+			<center>
+<img src="http://tca-esports.com/news/overwatch_banner.png">
+</center>
+<pre class="r"><code>#load packages and csv file
 library(ggplot2)
 library(dplyr)
 library(gridExtra)
@@ -117,99 +102,89 @@ library(ggdendro)
 library(factoextra)
 library(NbClust)
 library(corrplot)
-library(corrgram)
-</code></pre>
-
-<p>_warning: according the data the dataset was posted, I estimated it to correspond to <strong>patch 1.8.0.2</strong>(February 28, 2017), so the data here may not reflect the <strong>actual</strong> characteristics of the Heroes_</p>
-
-<p>#Motivation</p>
-
+library(corrgram)</code></pre>
+<p><em>warning: according the data the dataset was posted, I estimated it to correspond to <strong>patch 1.8.0.2</strong>(February 28, 2017), so the data here may not reflect the <strong>actual</strong> characteristics of the Heroes</em></p>
+<div id="motivation" class="section level1">
+<h1>Motivation</h1>
 <p>There are 4 types of classes in Overwatch (<a href="http://overwatch.wikia.com/wiki/Role">wikia</a>) :</p>
-
 <ul>
 <li><strong>Offense</strong>: main objective is to scout the area, harass the opposing team, and press the objective. Heroes classified as offense generally have high damage weapons and abilities and lower health pools. They are usually excellent duelists with high mobility and good burst or sustained damage.</li>
 <li><strong>Defense</strong>: main objective is to guard locations and establish a front. They may have long range weapons or the ability to create turrets, and excel at area denial.</li>
 <li><strong>Support</strong>: main objective of support is to heal, buff and provide utility. Support heroes boost the overall performance of their team by increasing their survivability, speed, and damage output.</li>
 <li><strong>Tank</strong>: they specialize in protecting allies, disrupting enemies, and occupying the front line. They have high survivability and abilities that protect themselves and others with shields and crowd control.</li>
 </ul>
-
 <p>The current data has the abilities list per character:</p>
-
 <ul>
 <li>the number of abilities is not the same per character so I will take the <code>median</code> when grouping per character(most of the time there are 2 abilities/character but sometimes there are more than 2 so taking the median rather than the mean is <em>safer</em>)</li>
 <li>We can try to <code>cluster</code> the Heroes according their abilities and infer to which class they belong.</li>
 </ul>
-
-<p>#Data preparation</p>
-
+</div>
+<div id="data-preparation" class="section level1">
+<h1>Data preparation</h1>
 <p>Some data cleaning / features transformations below.</p>
-
 <ul>
 <li>create column with name of each heroes based on the attack / ability column.
-
 <ul>
 <li>small tweak for <code>Torbj</code></li>
 </ul></li>
 <li>convert the <code>Life</code> column to numeric.
-
 <ul>
 <li>there are few cases, like <code>100/300</code> that need some regexp to extract the mean value.</li>
 </ul></li>
 <li>add the gender: not really useful for clustering but still interesting to add as feature.</li>
 <li>there is 1 row for which I could not find the <code>Heroes_name</code>(the one with name <code>melee</code> so I removed this line).</li>
 </ul>
-
-<pre><code class="language-r">#load data
-df&lt;-read.csv('../../data/Overwatch_edopic.csv',sep=',',stringsAsFactors=F)
+<pre class="r"><code>#load data
+df&lt;-read.csv(&#39;../../data/Overwatch_edopic.csv&#39;,sep=&#39;,&#39;,stringsAsFactors=F)
 
 #make list of all heroes name
-heroes_name&lt;-c('Ana','Bastion','D.va','Junkrat','Genji','Hanzo','Lucio','McCree','Mei','Mercy','Pharah','Reaper','Reinhardt','Roadhog','Soldier','Sombra','Symmetra','Torbj','Tracer','Widowmaker','Winston','Zarya','Zeny','Torretta')
+heroes_name&lt;-c(&#39;Ana&#39;,&#39;Bastion&#39;,&#39;D.va&#39;,&#39;Junkrat&#39;,&#39;Genji&#39;,&#39;Hanzo&#39;,&#39;Lucio&#39;,&#39;McCree&#39;,&#39;Mei&#39;,&#39;Mercy&#39;,&#39;Pharah&#39;,&#39;Reaper&#39;,&#39;Reinhardt&#39;,&#39;Roadhog&#39;,&#39;Soldier&#39;,&#39;Sombra&#39;,&#39;Symmetra&#39;,&#39;Torbj&#39;,&#39;Tracer&#39;,&#39;Widowmaker&#39;,&#39;Winston&#39;,&#39;Zarya&#39;,&#39;Zeny&#39;,&#39;Torretta&#39;)
 
 #loop over the Heroes column to extract the name of the character
 x &lt;- vector(mode=&quot;character&quot;, length=nrow(df))
 for(i in 1:length(heroes_name)){
-	if(heroes_name[i] == 'Torretta'){
-		temp&lt;-grep(heroes_name[i],df$Heroes)
-		for(k in 1:length(temp)){
-			x[temp[k]]&lt;-'Torbj'
-		}
-	} else {
-		check&lt;-grep(heroes_name[i],df$Heroes)
-		for(j in 1:length(check)){
-			x[check[j]]&lt;-heroes_name[i]
-			}
-		}
+    if(heroes_name[i] == &#39;Torretta&#39;){
+        temp&lt;-grep(heroes_name[i],df$Heroes)
+        for(k in 1:length(temp)){
+            x[temp[k]]&lt;-&#39;Torbj&#39;
+        }
+    } else {
+        check&lt;-grep(heroes_name[i],df$Heroes)
+        for(j in 1:length(check)){
+            x[check[j]]&lt;-heroes_name[i]
+            }
+        }
 }
 #make new column with Heroes name
 df$Heroes_name&lt;-x
 
 #convert Life to numeric
 convertLife&lt;-function(x){
-	if(grepl('\\/',x)==TRUE){
-		res&lt;-(as.numeric(strsplit(x,'/')[[1]][1]) + as.numeric(strsplit(x,'/')[[1]][2]))/2.
-	}
-	else{
-		res&lt;-as.numeric(x)
-	}
-	return(res)
+    if(grepl(&#39;\\/&#39;,x)==TRUE){
+        res&lt;-(as.numeric(strsplit(x,&#39;/&#39;)[[1]][1]) + as.numeric(strsplit(x,&#39;/&#39;)[[1]][2]))/2.
+    }
+    else{
+        res&lt;-as.numeric(x)
+    }
+    return(res)
 }
 df$Life&lt;-sapply(df$Life, convertLife)
 
 #make list of gender
 inferGender&lt;-function(x){
-  if(x %in% c('Ana','D.va','Mei','Mercy','Pharah','Sombra','Symmetra','Tracer','Widowmaker','Zarya')){
-    return('female')
+  if(x %in% c(&#39;Ana&#39;,&#39;D.va&#39;,&#39;Mei&#39;,&#39;Mercy&#39;,&#39;Pharah&#39;,&#39;Sombra&#39;,&#39;Symmetra&#39;,&#39;Tracer&#39;,&#39;Widowmaker&#39;,&#39;Zarya&#39;)){
+    return(&#39;female&#39;)
     }
-  else if(x %in% c('Junkrat','Genji','Hanzo','Lucio','McCree','Reaper','Reinhardt','Roadhog','Soldier','Torbj')){
-    return('male')
+  else if(x %in% c(&#39;Junkrat&#39;,&#39;Genji&#39;,&#39;Hanzo&#39;,&#39;Lucio&#39;,&#39;McCree&#39;,&#39;Reaper&#39;,&#39;Reinhardt&#39;,&#39;Roadhog&#39;,&#39;Soldier&#39;,&#39;Torbj&#39;)){
+    return(&#39;male&#39;)
     }
-  else if(x %in% c('Bastion','Zeny')){
-    return('robot')
+  else if(x %in% c(&#39;Bastion&#39;,&#39;Zeny&#39;)){
+    return(&#39;robot&#39;)
   }
-  else if(x %in% c('Winston')){
-    return('animal')
+  else if(x %in% c(&#39;Winston&#39;)){
+    return(&#39;animal&#39;)
   }
-  else return('other')
+  else return(&#39;other&#39;)
 }
 df$gender&lt;-sapply(df$Heroes_name, inferGender)
 
@@ -217,87 +192,75 @@ df$gender&lt;-sapply(df$Heroes_name, inferGender)
 df&lt;-df %&gt;%dplyr::filter(Heroes_name!=&quot;&quot;)
 
 #add color per gender
-mycat&lt;-c('female','male','robot','animal','other')
+mycat&lt;-c(&#39;female&#39;,&#39;male&#39;,&#39;robot&#39;,&#39;animal&#39;,&#39;other&#39;)
 mycols&lt;-c(&quot;#FF7F00&quot;,&quot;#1F78B4&quot;,&quot;#E31A1C&quot;,&quot;#CAB2D6&quot;,&quot;#999999&quot;)
-cols&lt;-data.frame('gender'=mycat,'color'=mycols)
-df&lt;-left_join(df, cols, by=c('gender'))
-</code></pre>
-
-<p>#Characters&rsquo;s distribution per ability</p>
-
-<p>The code below is a bit complicated but it&rsquo;s only because I wanted to make the <code>median</code> attributes histograms in 1 loop:</p>
-
+cols&lt;-data.frame(&#39;gender&#39;=mycat,&#39;color&#39;=mycols)
+df&lt;-left_join(df, cols, by=c(&#39;gender&#39;))</code></pre>
+</div>
+<div id="characterss-distribution-per-ability" class="section level1">
+<h1>Characters’s distribution per ability</h1>
+<p>The code below is a bit complicated but it’s only because I wanted to make the <code>median</code> attributes histograms in 1 loop:</p>
 <ul>
 <li><code>listFeatures</code> is an array of columns index.</li>
 <li><code>dplyr::select(Heroes_name,index,color)</code> selects the name of heroes of the feature column in the loop; it creates a dataframe with 2 columns : <code>name</code>, <code>current_feature</code> and <code>color</code>.</li>
 <li><code>summarise_at(1, median) %&gt;% rename_(val=names(.)[3])</code>: takes the median of the third column(<code>current_feature</code>) and renames it <code>val</code> so that I can make a plot independently of the real name.</li>
 </ul>
-
-<pre><code class="language-r">listPlot&lt;-list()
+<pre class="r"><code>listPlot&lt;-list()
 listFeatures&lt;-c(2,3,4,5,6,7,8)
 for (i in 1:length(listFeatures)){
-	index&lt;-listFeatures[i]
-	listPlot[[i]]&lt;-df %&gt;% dplyr::select(Heroes_name,index,color) %&gt;% na.omit() %&gt;% 
-	  dplyr::group_by(Heroes_name,color) %&gt;% dplyr::summarise_at(1,median) %&gt;% 
-	  rename_(val=names(.)[3]) %&gt;% 
-	  ggplot(aes(x=reorder(Heroes_name,val),y=val,fill=color)) + 
-	  geom_histogram(stat='identity',width=.5,color='black',size=.5) + 
-	  coord_flip() + theme_fivethirtyeight() + 
-	  scale_fill_identity() +
-	  labs(title=colnames(df)[index],
-	       subtitle='taken as median') + 
-	  theme(axis.text = element_text(size=8),
-	        plot.title=element_text(face=&quot;bold&quot;,hjust=.012,vjust=.8,colour=&quot;#3C3C3C&quot;,size=12),
-	        plot.subtitle=element_text(size=8, hjust=0, face=&quot;italic&quot;, color=&quot;black&quot;))
+    index&lt;-listFeatures[i]
+    listPlot[[i]]&lt;-df %&gt;% dplyr::select(Heroes_name,index,color) %&gt;% na.omit() %&gt;% 
+      dplyr::group_by(Heroes_name,color) %&gt;% dplyr::summarise_at(1,median) %&gt;% 
+      rename_(val=names(.)[3]) %&gt;% 
+      ggplot(aes(x=reorder(Heroes_name,val),y=val,fill=color)) + 
+      geom_histogram(stat=&#39;identity&#39;,width=.5,color=&#39;black&#39;,size=.5) + 
+      coord_flip() + theme_fivethirtyeight() + 
+      scale_fill_identity() +
+      labs(title=colnames(df)[index],
+           subtitle=&#39;taken as median&#39;) + 
+      theme(axis.text = element_text(size=8),
+            plot.title=element_text(face=&quot;bold&quot;,hjust=.012,vjust=.8,colour=&quot;#3C3C3C&quot;,size=12),
+            plot.subtitle=element_text(size=8, hjust=0, face=&quot;italic&quot;, color=&quot;black&quot;))
 }
 
 #make a gender histogram to be used also as color legend
-leg&lt;-df %&gt;% group_by(Heroes_name, gender,color) %&gt;% summarize(count = n_distinct(Heroes_name)) %&gt;% group_by(gender,color) %&gt;% summarize(countG=n()) %&gt;%  ggplot(aes(x=gender,y=countG,fill=color)) + geom_bar(stat='identity',color='black',size=.5) + 
-  scale_fill_identity() + theme_fivethirtyeight() + labs(title='Heroes distribution\nper gender') + 
+leg&lt;-df %&gt;% group_by(Heroes_name, gender,color) %&gt;% summarize(count = n_distinct(Heroes_name)) %&gt;% group_by(gender,color) %&gt;% summarize(countG=n()) %&gt;%  ggplot(aes(x=gender,y=countG,fill=color)) + geom_bar(stat=&#39;identity&#39;,color=&#39;black&#39;,size=.5) + 
+  scale_fill_identity() + theme_fivethirtyeight() + labs(title=&#39;Heroes distribution\nper gender&#39;) + 
   theme(axis.title = element_blank(),
         plot.title=element_text(face=&quot;bold&quot;,hjust=.012,vjust=.8,colour=&quot;#3C3C3C&quot;,size=12),
-        plot.subtitle=element_text(size=8, hjust=0, face=&quot;italic&quot;, color=&quot;black&quot;))
-</code></pre>
-
-<pre><code class="language-r">grid.arrange(listPlot[[1]],listPlot[[2]],listPlot[[3]],listPlot[[4]],listPlot[[5]],listPlot[[6]],listPlot[[7]],leg,ncol=4)
-</code></pre>
-
-<p><img src="2018-04-15-kaggle-overwatch-analysis_files/figure-html/unnamed-chunk-4-1.png" width="960" style="display: block; margin: auto;" /></p>
-
+        plot.subtitle=element_text(size=8, hjust=0, face=&quot;italic&quot;, color=&quot;black&quot;))</code></pre>
+<pre class="r"><code>grid.arrange(listPlot[[1]],listPlot[[2]],listPlot[[3]],listPlot[[4]],listPlot[[5]],listPlot[[6]],listPlot[[7]],leg,ncol=4)</code></pre>
+<p><img src="/post/2018-04-15-kaggle-overwatch-analysis_files/figure-html/unnamed-chunk-4-1.png" width="960" style="display: block; margin: auto;" /></p>
 <ul>
-<li><strong>Bastion</strong> seems a vey good character after all: he trusts 3 of the 7 abilities and he&rsquo;s well ranked in 2 others.</li>
+<li><strong>Bastion</strong> seems a vey good character after all: he trusts 3 of the 7 abilities and he’s well ranked in 2 others.</li>
 <li>overall, from my knowledge of the game/characters, this ranking makes sense and somehow agrees with the <a href="http://overwatch.wikia.com/wiki/Role">wikia</a>.</li>
 </ul>
-
-<p>#Analysis</p>
-
-<p>##Look at the raw data</p>
-
-<pre><code class="language-r">my_fn &lt;- function(data, mapping, method=&quot;loess&quot;, ...){
+</div>
+<div id="analysis" class="section level1">
+<h1>Analysis</h1>
+<div id="look-at-the-raw-data" class="section level2">
+<h2>Look at the raw data</h2>
+<pre class="r"><code>my_fn &lt;- function(data, mapping, method=&quot;loess&quot;, ...){
       p &lt;- ggplot(data = data, mapping = mapping) + 
       geom_point() + 
       geom_smooth(method=method, ...) + theme_fivethirtyeight() + theme(axis.text = element_text(size=8))
       p
 }
-ggpairs(df[,-c(1,7,9,10,11)],lower = list(continuous = my_fn))
-</code></pre>
-
-<p><img src="2018-04-15-kaggle-overwatch-analysis_files/figure-html/unnamed-chunk-5-1.png" width="960" style="display: block; margin: auto;" /></p>
-
+ggpairs(df[,-c(1,7,9,10,11)],lower = list(continuous = my_fn))</code></pre>
+<p><img src="/post/2018-04-15-kaggle-overwatch-analysis_files/figure-html/unnamed-chunk-5-1.png" width="960" style="display: block; margin: auto;" /></p>
 <ul>
 <li>some interesting and obvious correlations, for example: <code>Damage.per.second</code> vs. <code>Headshot.DPS</code></li>
-<li><code>NanoBoost</code> is one of Ana&rsquo;s ability to target one ally and shoot an injection to grant them a boost. That player receives a buff for 8 seconds; their attack damage is increased by 50% and gain 50% damage resistance for the duration.
-
+<li><code>NanoBoost</code> is one of Ana’s ability to target one ally and shoot an injection to grant them a boost. That player receives a buff for 8 seconds; their attack damage is increased by 50% and gain 50% damage resistance for the duration.
 <ul>
 <li>the correlation with <code>Damage.per.second</code>, or <code>Headshot.DPS</code> is linear, which somehow makes sense with the definition of <code>nanoboost</code>(increased attack).</li>
 </ul></li>
 </ul>
-
-<p>##Tank vs. Offense class</p>
-
-<p>###Damage_DPS vs. Life</p>
-
-<pre><code class="language-r">g1&lt;-df %&gt;% 
+</div>
+<div id="tank-vs.offense-class" class="section level2">
+<h2>Tank vs. Offense class</h2>
+<div id="damage_dps-vs.life" class="section level3">
+<h3>Damage_DPS vs. Life</h3>
+<pre class="r"><code>g1&lt;-df %&gt;% 
   dplyr::select(Heroes_name, Damage.per.second,Life,color) %&gt;% 
   dplyr::group_by(Heroes_name,color) %&gt;% 
   summarize(
@@ -307,14 +270,13 @@ ggpairs(df[,-c(1,7,9,10,11)],lower = list(continuous = my_fn))
   geom_label_repel(aes(label=ifelse(medianLife&gt;400 | medianDamage&gt;200,Heroes_name,&quot;&quot;)),size=3,force=1) + 
   theme_fivethirtyeight() + 
   scale_fill_identity() + theme(
-    legend.position='top',
+    legend.position=&#39;top&#39;,
         plot.title=element_text(face=&quot;bold&quot;,hjust=.012,vjust=.8,colour=&quot;#3C3C3C&quot;,size=12)) +
-  labs(title='median Damage/sec. vs. mean Life')
-</code></pre>
-
-<p>###Headshot_DPS vs. Life</p>
-
-<pre><code class="language-r">g2&lt;-df %&gt;% 
+  labs(title=&#39;median Damage/sec. vs. mean Life&#39;)</code></pre>
+</div>
+<div id="headshot_dps-vs.life" class="section level3">
+<h3>Headshot_DPS vs. Life</h3>
+<pre class="r"><code>g2&lt;-df %&gt;% 
   dplyr::select(Heroes_name, Headshot.DPS,Life,color) %&gt;% 
   dplyr::group_by(Heroes_name,color) %&gt;% 
   summarize(
@@ -323,14 +285,13 @@ ggpairs(df[,-c(1,7,9,10,11)],lower = list(continuous = my_fn))
   ggplot(aes(x=medianLife, y= medianHeadshot, fill=color)) + geom_point(size=2) + 
   geom_label_repel(aes(label=ifelse(medianLife&gt;400 | medianHeadshot&gt;400,Heroes_name,&quot;&quot;)),size=3,force=1) + 
   theme_fivethirtyeight() + 
-  scale_fill_identity() + theme(legend.position='top',
+  scale_fill_identity() + theme(legend.position=&#39;top&#39;,
         plot.title=element_text(face=&quot;bold&quot;,hjust=.012,vjust=.8,colour=&quot;#3C3C3C&quot;,size=12)) +
-  labs(title='median Headshot vs. median Life')
-</code></pre>
-
-<p>###Singleshot vs. Life</p>
-
-<pre><code class="language-r">g3&lt;-df %&gt;% 
+  labs(title=&#39;median Headshot vs. median Life&#39;)</code></pre>
+</div>
+<div id="singleshot-vs.life" class="section level3">
+<h3>Singleshot vs. Life</h3>
+<pre class="r"><code>g3&lt;-df %&gt;% 
   dplyr::select(Heroes_name,Single.shot,Life,color) %&gt;% 
   dplyr::group_by(Heroes_name,color) %&gt;% 
   summarize(
@@ -339,44 +300,36 @@ ggpairs(df[,-c(1,7,9,10,11)],lower = list(continuous = my_fn))
   ggplot(aes(x=medianLife, y= medianSingleShot, fill=color)) + geom_point(size=2) + 
   geom_label_repel(aes(label=ifelse(medianLife&gt;400 | medianSingleShot&gt;100,Heroes_name,&quot;&quot;)),size=3,force=1) + 
   theme_fivethirtyeight() + 
-  scale_fill_identity() + theme(legend.position='top',
+  scale_fill_identity() + theme(legend.position=&#39;top&#39;,
         plot.title=element_text(face=&quot;bold&quot;,hjust=.012,vjust=.8,colour=&quot;#3C3C3C&quot;,size=12)) +
-  labs(title='median SingleShot vs. median Life')
-</code></pre>
-
-<pre><code class="language-r">grid.arrange(g1, g2, g3, ncol=3)
-</code></pre>
-
-<p><img src="2018-04-15-kaggle-overwatch-analysis_files/figure-html/unnamed-chunk-9-1.png" width="960" style="display: block; margin: auto;" /></p>
-
+  labs(title=&#39;median SingleShot vs. median Life&#39;)</code></pre>
+<pre class="r"><code>grid.arrange(g1, g2, g3, ncol=3)</code></pre>
+<p><img src="/post/2018-04-15-kaggle-overwatch-analysis_files/figure-html/unnamed-chunk-9-1.png" width="960" style="display: block; margin: auto;" /></p>
 <ul>
 <li>again we see some delimitations between characters based on these 3 abilities:
-
 <ul>
 <li>high life characters and high <code>DPS</code> characters can be grouped into clusters.</li>
 </ul></li>
 <li><strong>Reaper</strong> looks a powerfull character: high <code>DPS</code> and high <code>SingleShot</code> and a good amount of health.</li>
 </ul>
-
-<p>##Radarcharts</p>
-
+</div>
+</div>
+<div id="radarcharts" class="section level2">
+<h2>Radarcharts</h2>
 <p>For the <code>radarcharts</code>, some manipulation was needed:</p>
-
 <ul>
 <li>there are some <code>Inf</code> values, taken as numeric. These values will appear as <code>Inf</code> too when taking the median so I replace them by <code>0</code> before <code>grouping_by --&gt; median</code></li>
 <li>I kept all columns to make a comparison for all characters ; since all characters do not have the same abilities in this dataset, the simplest would have to drop these columns. At the end, I decided to keep these columns.</li>
 <li>after the <code>grouping_by --&gt; median</code>, there were still some <code>NA</code>; that explains the <code>mutate</code> part in the pipe.
-
 <ul>
 <li><strong>So when a character will have a <code>0</code> value, it means that there were no data for this character/ability.</strong></li>
 </ul></li>
 <li>the rest of the code appends the <code>color, Name</code> of heroes, calculate <code>min/max</code> needed for the radarcharts.</li>
 </ul>
-
-<pre><code class="language-r">#repalce Inf by 0
+<pre class="r"><code>#repalce Inf by 0
 df&lt;-do.call(data.frame,lapply(df, function(x) replace(x, is.infinite(x),NA)))
 
-#group_by Heroes, calculate median for all columns, repalce final NA's, save result in a list
+#group_by Heroes, calculate median for all columns, repalce final NA&#39;s, save result in a list
 dataPerChar&lt;-list()      
 for(i in 1:(length(heroes_name)-1)){
   dataPerChar[[i]]&lt;-data.frame(
@@ -395,13 +348,11 @@ for(i in 1:(length(heroes_name)-1)){
 #make a dataframe, add additional features, prepare radarcharts
 res&lt;-do.call(&quot;rbind&quot;,dataPerChar)
 res$Heroes_name&lt;-heroes_name[-length(heroes_name)]
-res&lt;-left_join(res,df %&gt;% select(Heroes_name,color) %&gt;% distinct(),by='Heroes_name')
+res&lt;-left_join(res,df %&gt;% select(Heroes_name,color) %&gt;% distinct(),by=&#39;Heroes_name&#39;)
 min&lt;-rep.int(0,7)
 max&lt;- ceiling(apply(res[,1:7], 2, function(x) max(x, na.rm = TRUE)) %&gt;% sapply(as.double)) %&gt;% as.vector
-colnames(res)&lt;-c('Damage/sec','Headshot.DPS','SingleShot','Nanoboost.DPS','Health/sec','Life','Reload','Heroes_name','color')
-</code></pre>
-
-<pre><code class="language-r">par(mfrow=c(6,4))
+colnames(res)&lt;-c(&#39;Damage/sec&#39;,&#39;Headshot.DPS&#39;,&#39;SingleShot&#39;,&#39;Nanoboost.DPS&#39;,&#39;Health/sec&#39;,&#39;Life&#39;,&#39;Reload&#39;,&#39;Heroes_name&#39;,&#39;color&#39;)</code></pre>
+<pre class="r"><code>par(mfrow=c(6,4))
 par(mar=c(1,1,1,1))
 for(i in 1:nrow(res)){
   curCol&lt;-(col2rgb(as.character(res$color[i]))%&gt;% as.integer())/255
@@ -412,38 +363,33 @@ for(i in 1:nrow(res)){
              plwd=2 , cglcol=&quot;grey&quot;, cglty=1, 
              axislabcol=&quot;black&quot;, caxislabels=seq(0,2000,5), cglwd=0.8, vlcex=0.8,
              title=as.character(res$Heroes_name[i]))
-}
-</code></pre>
-
-<p><img src="2018-04-15-kaggle-overwatch-analysis_files/figure-html/unnamed-chunk-11-1.png" width="960" style="display: block; margin: auto;" /></p>
-
+}</code></pre>
+<p><img src="/post/2018-04-15-kaggle-overwatch-analysis_files/figure-html/unnamed-chunk-11-1.png" width="960" style="display: block; margin: auto;" /></p>
 <ul>
 <li><code>Bastion</code> overpowered-abilities are better displayed in these charts; clearly a very good character in many abilities</li>
 <li><code>Reaper</code> also appears on top on the <code>Offense</code> character with high values for <code>SingleShot</code>,<code>HeadShot</code> and <code>Damage/sec</code></li>
 <li>we also see specific characters, like <code>Phara</code> excelling in <code>HeadShot</code>, <code>Symmetra</code> for <code>Reload</code> or <code>Winston</code> for having the largest pool of <code>Life</code>.</li>
 </ul>
-
-<p>#Dendograms</p>
-
-<p>The issue with using a dendogram here is that the dataset is quite sparse, because of the <code>NA</code> or <code>Inf</code> values.
-One trick however is to :</p>
-
+</div>
+</div>
+<div id="dendograms" class="section level1">
+<h1>Dendograms</h1>
+<p>The issue with using a dendogram here is that the dataset is quite sparse, because of the <code>NA</code> or <code>Inf</code> values. One trick however is to :</p>
 <ul>
 <li>cluster per Character by taking the median by column</li>
 <li>flag the <code>NA</code>, <code>Inf</code> with a negative value</li>
 <li>define your own cluster / distance method</li>
 </ul>
-
-<pre><code class="language-r">meanVal&lt;-list()
+<pre class="r"><code>meanVal&lt;-list()
 for(i in 1:(length(heroes_name)-1)){
-	meanVal[[i]]&lt;-df %&gt;% filter(Heroes_name==heroes_name[i]) %&gt;% select_if(is.numeric) %&gt;% colMeans(na.rm=T)
+    meanVal[[i]]&lt;-df %&gt;% filter(Heroes_name==heroes_name[i]) %&gt;% select_if(is.numeric) %&gt;% colMeans(na.rm=T)
 }
 
 res&lt;-do.call(&quot;rbind&quot;,meanVal)
 res[!is.finite(res) | is.na(res)] &lt;- -1
 
 rownames(res)&lt;-heroes_name[-length(heroes_name)]
-colnames(res)&lt;-c('Damage/sec','Headshot.DPS','SingleShot','Nanoboost.DPS','Health/sec','Life','Reload')
+colnames(res)&lt;-c(&#39;Damage/sec&#39;,&#39;Headshot.DPS&#39;,&#39;SingleShot&#39;,&#39;Nanoboost.DPS&#39;,&#39;Health/sec&#39;,&#39;Life&#39;,&#39;Reload&#39;)
 
 breaks = seq(0,max(res),length.out=1000)
 gradient1 = colorpanel( sum( breaks[-1]&lt;=0 ), &quot;green&quot;, &quot;black&quot; )
@@ -453,10 +399,8 @@ hm.colors[1] = col2hex(&quot;gray&quot;)
 
 # Clustering and distance measure functions
 hclustfunc &lt;- function(x) hclust(x, method=&quot;complete&quot;)
-distfunc &lt;- function(x) dist(x,method=&quot;maximum&quot;)
-</code></pre>
-
-<pre><code class="language-r">heatmap.2(res,
+distfunc &lt;- function(x) dist(x,method=&quot;maximum&quot;)</code></pre>
+<pre class="r"><code>heatmap.2(res,
           scale=&quot;none&quot;,
           breaks=breaks,
           col=hm.colors,
@@ -464,45 +408,35 @@ distfunc &lt;- function(x) dist(x,method=&quot;maximum&quot;)
           dendrogram=&quot;row&quot;, 
           hclust=hclustfunc,
           distfun=distfunc,
-          main = &quot;Characters's abilities,\nNA or Inf values in gray&quot;,
-          cexRow=.8,cexCol=.8)
-</code></pre>
-
-<p><img src="2018-04-15-kaggle-overwatch-analysis_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
-
-<p>#Clusters</p>
-
-<p>In this section, I&rsquo;m using the average abilities per character so each character should have either the mean value, or the flagged <code>-1</code> is there were <code>NA</code> or <code>Inf</code></p>
-
-<pre><code class="language-r">res_df&lt;-data.frame(res)
+          main = &quot;Characters&#39;s abilities,\nNA or Inf values in gray&quot;,
+          cexRow=.8,cexCol=.8)</code></pre>
+<p><img src="/post/2018-04-15-kaggle-overwatch-analysis_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+</div>
+<div id="clusters" class="section level1">
+<h1>Clusters</h1>
+<p>In this section, I’m using the average abilities per character so each character should have either the mean value, or the flagged <code>-1</code> is there were <code>NA</code> or <code>Inf</code></p>
+<pre class="r"><code>res_df&lt;-data.frame(res)
 res_df$Heroes_name&lt;-rownames(res_df)
-res_df&lt;-left_join(res_df,df %&gt;% distinct(Heroes_name, color, gender), by='Heroes_name')
-</code></pre>
-
-<p>##Correlation</p>
-
+res_df&lt;-left_join(res_df,df %&gt;% distinct(Heroes_name, color, gender), by=&#39;Heroes_name&#39;)</code></pre>
+<div id="correlation" class="section level2">
+<h2>Correlation</h2>
 <p>Similar to the previous section, we can look at the correlation.</p>
-
-<pre><code class="language-r">corrplot(cor(res_df %&gt;% select_if(is.numeric),method='pearson')
-  ,method='ellipse',
+<pre class="r"><code>corrplot(cor(res_df %&gt;% select_if(is.numeric),method=&#39;pearson&#39;)
+  ,method=&#39;ellipse&#39;,
   order=&quot;AOE&quot;,
   tl.cex=1,
   col= viridis::viridis(100),
-  tl.col=&quot;black&quot;)
-</code></pre>
-
-<p><img src="2018-04-15-kaggle-overwatch-analysis_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
-
+  tl.col=&quot;black&quot;)</code></pre>
+<p><img src="/post/2018-04-15-kaggle-overwatch-analysis_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
 <ul>
 <li>The correlation I can understand(<code>Reload</code> vs. <code>Damage per sec.</code>), small positive correlatio) makes sense if <code>Reload</code> feature corresponds to the time it takes to reload a weapon.</li>
 <li>The anticorrelation(<code>Reload</code> vs. <code>Damage per sec.</code>) is a bit difficult to understand w/o knowledge of what the features in this dataset really correspond to.</li>
 </ul>
-
-<p>##Clustering the dataset</p>
-
+</div>
+<div id="clustering-the-dataset" class="section level2">
+<h2>Clustering the dataset</h2>
 <p>There are 4 classes, so lets try to clusters from 2 to 5(taking values a bit lower/higher).</p>
-
-<pre><code class="language-r">clusPlot&lt;-list()
+<pre class="r"><code>clusPlot&lt;-list()
 cnt&lt;-0
 for(i in 2:5){
   cnt&lt;-cnt+1
@@ -518,47 +452,35 @@ for(i in 2:5){
     ggtheme = theme_fivethirtyeight(),
     outlier.color = &quot;black&quot;) +
     ggtitle(paste0(&quot;# of Clusters:&quot;,i))
-  }
-</code></pre>
-
-<pre><code class="language-r">do.call(grid.arrange, c(clusPlot,ncol=4))
-</code></pre>
-
-<p><img src="2018-04-15-kaggle-overwatch-analysis_files/figure-html/unnamed-chunk-17-1.png" width="960" style="display: block; margin: auto;" /></p>
-
+  }</code></pre>
+<pre class="r"><code>do.call(grid.arrange, c(clusPlot,ncol=4))</code></pre>
+<p><img src="/post/2018-04-15-kaggle-overwatch-analysis_files/figure-html/unnamed-chunk-17-1.png" width="960" style="display: block; margin: auto;" /></p>
 <ul>
 <li>from the clusters plots, it looks like <code>Nclus = 3</code>(3 classes) would be a good value to clusters the data.</li>
 </ul>
-
-<p>###Check: <code>Nclus = 3</code></p>
-
-<pre><code class="language-r">res_clean &lt;- as.data.frame(scale(res_df %&gt;% select_if(is.numeric)))
+<div id="check-nclus-3" class="section level3">
+<h3>Check: <code>Nclus = 3</code></h3>
+<pre class="r"><code>res_clean &lt;- as.data.frame(scale(res_df %&gt;% select_if(is.numeric)))
 ff &lt;- dist(res_clean, method = &quot;euclidean&quot;)
 g1&lt;-fviz_nbclust(res_clean, kmeans, method = &quot;wss&quot;)
-g2&lt;-fviz_nbclust(res_clean, kmeans, method = &quot;silhouette&quot;)
-</code></pre>
-
-<pre><code class="language-r">grid.arrange(g1,g2,ncol=2)
-</code></pre>
-
-<p><img src="2018-04-15-kaggle-overwatch-analysis_files/figure-html/unnamed-chunk-19-1.png" width="960" style="display: block; margin: auto;" /></p>
-
+g2&lt;-fviz_nbclust(res_clean, kmeans, method = &quot;silhouette&quot;)</code></pre>
+<pre class="r"><code>grid.arrange(g1,g2,ncol=2)</code></pre>
+<p><img src="/post/2018-04-15-kaggle-overwatch-analysis_files/figure-html/unnamed-chunk-19-1.png" width="960" style="display: block; margin: auto;" /></p>
 <ul>
 <li>clustering by <code>silhouette</code> (via <a href="http://www.sthda.com/english/articles/29-cluster-validation-essentials/97-cluster-validation-statistics-must-know-methods/">http://www.sthda.com</a>:<em>The silhouette analysis measures how well an observation is clustered and it estimates the average distance between clusters. The silhouette plot displays a measure of how close each point in one cluster is to points in the neighboring clusters</em>) is agree with <code>Nclus = 3</code> :-)</li>
 </ul>
-
 <hr>
-
 <p><strong>History :</strong></p>
-
 <ul>
 <li><em>version 1: initial commit</em></li>
 <li><em>version 2: added radarcharts</em></li>
 <li><em>version 3: added dendograms</em></li>
 <li><em>version 4: added clusters section</em></li>
 </ul>
-
 <hr>
+</div>
+</div>
+</div>
 
 		</div>
 		
@@ -587,9 +509,6 @@ g2&lt;-fviz_nbclust(res_clean, kmeans, method = &quot;silhouette&quot;)
 <nav class="post-nav row clearfix" itemscope="itemscope" itemtype="http://schema.org/SiteNavigationElement">
 	<div class="post-nav__item post-nav__item--prev col-1-2">
 		<a class="post-nav__link" href="/2018/04/15/worldcup-goal/" rel="prev"><span class="post-nav__caption">«Previous</span><p class="post-nav__post-title">[캐글] 월드컵 골 분석</p></a>
-	</div>
-	<div class="post-nav__item post-nav__item--next col-1-2">
-		<a class="post-nav__link" href="/2018/04/15/kaggle-overwatch-analysis/" rel="next"><span class="post-nav__caption">Next»</span><p class="post-nav__post-title">[Kaggle] Overwatch Analysis</p></a>
 	</div>
 </nav>
 
@@ -637,10 +556,10 @@ g2&lt;-fviz_nbclust(res_clean, kmeans, method = &quot;silhouette&quot;)
 	<div class="widget__content">
 		<ul class="widget__list">
 			<li class="widget__item"><a class="widget__link" href="/2018/04/15/kaggle-overwatch-analysis/">[Kaggle] Overwatch Analysis</a></li>
-			<li class="widget__item"><a class="widget__link" href="/2018/04/15/kaggle-overwatch-analysis/">[Kaggle] Overwatch Analysis</a></li>
-			<li class="widget__item"><a class="widget__link" href="/2018/04/15/kaggle-overwatch-analysis/">[Kaggle] Overwatch Analysis</a></li>
 			<li class="widget__item"><a class="widget__link" href="/2018/04/15/worldcup-goal/">[캐글] 월드컵 골 분석</a></li>
 			<li class="widget__item"><a class="widget__link" href="/2018/04/12/rpackage-network3d/">[R 패키지] 3D 네트워크 시각화 - network3d</a></li>
+			<li class="widget__item"><a class="widget__link" href="/2016/12/30/a-plain-markdown-post/">A Plain Markdown Post</a></li>
+			<li class="widget__item"><a class="widget__link" href="/2015/07/23/hello-r-markdown/">Hello R Markdown</a></li>
 		</ul>
 	</div>
 </div>
@@ -705,13 +624,13 @@ g2&lt;-fviz_nbclust(res_clean, kmeans, method = &quot;silhouette&quot;)
 	<h4 class="widget__title">Tags</h4>
 	<div class="widget__content">
 		<a class="widget__link widget__link--taglist" href="/tags/network3d" title="network3d">network3d (1)</a>
-		<a class="widget__link widget__link--taglist" href="/tags/overwatch" title="overwatch">overwatch (3)</a>
+		<a class="widget__link widget__link--taglist" href="/tags/overwatch" title="overwatch">overwatch (1)</a>
 		<a class="widget__link widget__link--taglist" href="/tags/plot" title="plot">plot (1)</a>
 		<a class="widget__link widget__link--taglist" href="/tags/r-markdown" title="r-markdown">r-markdown (2)</a>
 		<a class="widget__link widget__link--taglist" href="/tags/r-%ed%8c%a8%ed%82%a4%ec%a7%80" title="r-패키지">r-패키지 (1)</a>
 		<a class="widget__link widget__link--taglist" href="/tags/regression" title="regression">regression (1)</a>
 		<a class="widget__link widget__link--taglist" href="/tags/%ec%8b%9c%ea%b0%81%ed%99%94" title="시각화">시각화 (2)</a>
-		<a class="widget__link widget__link--taglist" href="/tags/%ec%ba%90%ea%b8%80" title="캐글">캐글 (4)</a>
+		<a class="widget__link widget__link--taglist" href="/tags/%ec%ba%90%ea%b8%80" title="캐글">캐글 (2)</a>
 	</div>
 </div>
 </aside>

@@ -23,28 +23,6 @@ Motivation There are 4 types of classes in Overwatch (wikia) :
     </item>
     
     <item>
-      <title>[Kaggle] Overwatch Analysis</title>
-      <link>/2018/04/15/kaggle-overwatch-analysis/</link>
-      <pubDate>Sun, 15 Apr 2018 00:00:00 +0000</pubDate>
-      
-      <guid>/2018/04/15/kaggle-overwatch-analysis/</guid>
-      <description>title: &amp;ldquo;Overwatch: who should I main ?&amp;rdquo; author: &amp;ldquo;Jonathan Bouchet&amp;rdquo; date: &amp;ldquo;2018-04-15&amp;rdquo; output: html_document: fig_width: 10 fig_height: 7 toc: yes number_sections : yes
-code_folding: show 
-#load packages and csv file library(ggplot2) library(dplyr) library(gridExtra) library(fmsb) library(ggthemes) library(ggridges) library(RColorBrewer) library(grid) library(gridExtra) library(ggrepel) library(GGally) library(gplots) library(ggdendro) library(factoextra) library(NbClust) library(corrplot) library(corrgram)  _warning: according the data the dataset was posted, I estimated it to correspond to patch 1.8.0.2(February 28, 2017), so the data here may not reflect the actual characteristics of the Heroes_</description>
-    </item>
-    
-    <item>
-      <title>[Kaggle] Overwatch Analysis</title>
-      <link>/2018/04/15/kaggle-overwatch-analysis/</link>
-      <pubDate>Sun, 15 Apr 2018 00:00:00 +0000</pubDate>
-      
-      <guid>/2018/04/15/kaggle-overwatch-analysis/</guid>
-      <description>title: &amp;ldquo;Overwatch: who should I main ?&amp;rdquo; author: &amp;ldquo;Jonathan Bouchet&amp;rdquo; date: &amp;ldquo;2018-04-15&amp;rdquo; output: html_document: fig_width: 10 fig_height: 7 toc: yes number_sections : yes
-code_folding: show 
-#load packages and csv file library(ggplot2) library(dplyr) library(gridExtra) library(fmsb) library(ggthemes) library(ggridges) library(RColorBrewer) library(grid) library(gridExtra) library(ggrepel) library(GGally) library(gplots) library(ggdendro) library(factoextra) library(NbClust) library(corrplot) library(corrgram)  _warning: according the data the dataset was posted, I estimated it to correspond to patch 1.8.0.2(February 28, 2017), so the data here may not reflect the actual characteristics of the Heroes_</description>
-    </item>
-    
-    <item>
       <title>[캐글] 월드컵 골 분석</title>
       <link>/2018/04/15/worldcup-goal/</link>
       <pubDate>Sun, 15 Apr 2018 00:00:00 +0000</pubDate>
