@@ -1,14 +1,13 @@
 ---
-title: Kaggle 예제
+title: '[캐글] 월드컵 골 분석'
 author: THE-R
 date: '2018-04-15'
-slug: kaggle
+slug: Worldcup Goal
 categories:
   - 캐글
 tags:
-  - 캐글
   - 시각화
-  - 스포츠
+  - 캐글
 description: ''
 thumbnail: ''
 ---

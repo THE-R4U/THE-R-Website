@@ -1,14 +1,13 @@
 ---
-title: Kaggle 예제
+title: '[캐글] 월드컵 골 분석'
 author: THE-R
 date: '2018-04-15'
-slug: kaggle
+slug: Worldcup Goal
 categories:
   - 캐글
 tags:
-  - 캐글
   - 시각화
-  - 스포츠
+  - 캐글
 description: ''
 thumbnail: ''
 ---
@@ -138,7 +137,7 @@ g2 &lt;- worldCups %&gt;% ggplot(aes(x=as.POSIXct(DateTS),y=Attendance)) +
     subtitle=&#39;vertical lines show editions for which the host country also won&#39;)</code></pre>
 <pre class="r"><code># assemble everything
 grid.arrange(g2,g11,ncol=1)</code></pre>
-<p><img src="/post/2018-04-15-kaggle_files/figure-html/unnamed-chunk-7-1.png" width="1152" style="display: block; margin: auto;" /></p>
+<p><img src="/post/2018-04-15-Worldcup-Goal_files/figure-html/unnamed-chunk-7-1.png" width="1152" style="display: block; margin: auto;" /></p>
 <ul>
 <li><code>Uruguay(1930)</code>, <code>Italy(1934)</code>, <code>England(1966)</code> ,<code>Argentina(1978)</code> and <code>France(1998)</code> were the only editions where a host country also won the Cup.</li>
 <li><code>1954</code>, <code>1982</code>, <code>1998</code> and <code>2014</code> will be interesting to investigate because of the spikes in the number of total goals scored.</li>
@@ -195,7 +194,7 @@ qualifiedTeams&lt;-worldCups %&gt;% ggplot(aes(x=as.POSIXct(DateTS),y= Qualified
   theme(axis.text.x=element_text(size=11))</code></pre>
 <pre class="r"><code># assemble everything
 grid.arrange(matchesPlayed, qualifiedTeams,ncol=1)</code></pre>
-<p><img src="/post/2018-04-15-kaggle_files/figure-html/unnamed-chunk-9-1.png" width="1152" style="display: block; margin: auto;" /></p>
+<p><img src="/post/2018-04-15-Worldcup-Goal_files/figure-html/unnamed-chunk-9-1.png" width="1152" style="display: block; margin: auto;" /></p>
 </div>
 <div id="matches-details" class="section level1">
 <h1>Matches details</h1>
@@ -241,7 +240,7 @@ ggplot(data=na_count,aes(x=reorder(names,-number),y=number)) +
   theme(axis.text.x = element_text(angle=90, hjust=1)) + 
   ylab(&#39;Number of rows&#39;) + xlab(&#39;features&#39;) +
   geom_text(aes(label=Percent), position=position_dodge(width=0.9), hjust=0.25,vjust=-0.25,size=6,color=&#39;red&#39;)  +theme_fivethirtyeight() + labs(title=&#39;Missing values in dataset&#39;,subtitle=&#39;percentage in red&#39;)</code></pre>
-<p><img src="/post/2018-04-15-kaggle_files/figure-html/unnamed-chunk-12-1.png" width="1152" style="display: block; margin: auto;" /></p>
+<p><img src="/post/2018-04-15-Worldcup-Goal_files/figure-html/unnamed-chunk-12-1.png" width="1152" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>df &lt;- df %&gt;% na.omit()
 # clean up names
 df$AwayTeam &lt;-ifelse(df$AwayTeam ==&#39;IR Iran&#39;,&#39;Iran&#39;,df$AwayTeam)
@@ -315,7 +314,7 @@ for(i in 1:length(years)){
 <div id="alluvials-plots-for-world-cups-after-1982" class="section level2">
 <h2><code>Alluvials plots</code> for World Cups after 1982</h2>
 <pre class="r"><code>do.call(grid.arrange, c(alluvials, ncol=2))</code></pre>
-<p><img src="/post/2018-04-15-kaggle_files/figure-html/unnamed-chunk-18-1.png" width="1152" style="display: block; margin: auto;" /></p>
+<p><img src="/post/2018-04-15-Worldcup-Goal_files/figure-html/unnamed-chunk-18-1.png" width="1152" style="display: block; margin: auto;" /></p>
 </div>
 </div>
 <div id="prediction-modeling" class="section level1">
@@ -487,7 +486,7 @@ df %&gt;% filter(grepl(&#39;Group&#39;,Round)) %&gt;% group_by(DateTS, Round) %&
   geom_vline(xintercept= as.POSIXct(as.Date(&#39;1972-01-01&#39;)),color=&#39;red&#39;) + 
   geom_vline(xintercept= as.POSIXct(as.Date(&#39;1980-01-01&#39;)),color=&#39;red&#39;) + 
   geom_vline(xintercept= as.POSIXct(as.Date(&#39;1984-01-01&#39;)),color=&#39;red&#39;)</code></pre>
-<p><img src="/post/2018-04-15-kaggle_files/figure-html/unnamed-chunk-32-1.png" width="1152" style="display: block; margin: auto;" /></p>
+<p><img src="/post/2018-04-15-Worldcup-Goal_files/figure-html/unnamed-chunk-32-1.png" width="1152" style="display: block; margin: auto;" /></p>
 <p>The issues with the preliminary groups over time are :</p>
 <ul>
 <li>different number of groups</li>
