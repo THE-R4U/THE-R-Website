@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kaggle 예제</title>
+<meta name="description" content=" R 데이터분석에 필요한 패키지 활용, 교육정보 제공">
+<meta name="generator" content="Hugo 0.38.1" />
+<meta property="og:title" content="Kaggle 예제" />
+<meta property="og:description" content="History :
+ version 1 : initial commit version 2 : added World Cup history, fix some typos, some cosmetics version 3 : added alluvials plots for the matches details version 4 : added work for modeling section, added summary table version 5 : fix logic, reshape code version 6 : update code to find Cup winner, added tables for the 2002 to 2014 editions version 7 : major cleanup and simplification to find the Cup Winner   #load packages and csv file library(ggplot2) library(dplyr) library(gridExtra) library(RColorBrewer) library(ggthemes) library(viridis) library(reshape2) library(gridExtra) library(scales) library(ggalluvial) library(knitr) library(DT) options(DT." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/2018/04/15/kaggle/" />
+
+
+
+<meta property="article:published_time" content="2018-04-15T00:00:00&#43;00:00"/>
+
+<meta property="article:modified_time" content="2018-04-15T00:00:00&#43;00:00"/>
+
+
+
+
+
+
+
+
+
+
+
+<link rel="dns-prefetch" href="//fonts.googleapis.com" />
+<link rel="dns-prefetch" href="//fonts.gstatic.com" />
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700" type="text/css" media="all" />
+<link rel="stylesheet" href="/css/style.css" type="text/css" media="all" />
+<script type="text/javascript" src="/js/scripts.js"></script>
+<link rel="shortcut icon" href="/favicon.ico">
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-117555860-1', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+</head>
+<body class="body body-right-sidebar mobile" itemscope="itemscope" itemtype="http://schema.org/WebPage">
+	<div class="container container-outer">
+		<header class="header" itemscope="itemscope" itemtype="http://schema.org/WPHeader">
+			<div class="container container-inner clearfix">
+				<div class="logo" role="banner" itemscope="itemscope" itemtype="http://schema.org/Brand">
+					<a class="logo__link" href="/" title="THE-R" rel="home">
+						<h1 class="logo__title">THE-R</h1>
+						<h2 class="logo__tagline">데이터분석가를 위한 R 황금레시피</h2>
+					</a>
+				</div>
+			</div>
+			
+<nav class="menu" itemscope="itemscope" itemtype="http://schema.org/SiteNavigationElement">
+	<ul class="menu__list">
+		<li class="menu__item"><a class="menu__link" href="https://github.com/THE-R4U">GITHUB</a></li>
+		<li class="menu__item"><a class="menu__link" href="/categories/">카테고리</a></li>
+		<li class="menu__item"><a class="menu__link" href="https://twitter.com/The_R_Blog">트위터</a></li>
+		<li class="menu__item"><a class="menu__link" href="https://fb.me/THER4U">페이스북</a></li>
+	</ul>
+</nav>
+
+		</header>
+		<div class="wrapper clearfix">
+
+<main class="main-content content" role="main" itemprop="mainContentOfPage">
+	<article class="post">
+		<header class="post__header clearfix">
+			<h1 class="post__title">Kaggle 예제</h1>
+			<p class="post__meta meta">
+				<svg class="icon icon-time" height="14" viewBox="0 0 16 16" width="14" xmlns="http://www.w3.org/2000/svg"><path d="m8-.0000003c-4.4 0-8 3.6-8 8 0 4.4000003 3.6 8.0000003 8 8.0000003 4.4 0 8-3.6 8-8.0000003 0-4.4-3.6-8-8-8zm0 14.4000003c-3.52 0-6.4-2.88-6.4-6.4000003 0-3.52 2.88-6.4 6.4-6.4 3.52 0 6.4 2.88 6.4 6.4 0 3.5200003-2.88 6.4000003-6.4 6.4000003zm.4-10.4000003h-1.2v4.8l4.16 2.5600003.64-1.04-3.6-2.1600003z"/></svg>
+				<time class="post__meta-date" datetime="2018-04-15T00:00:00">2018-04-15</time>
+				<span class="post__meta-categories meta-categories">
+					<svg class="icon icon-category" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="m7 2l1 2h8v11h-16v-13z"/></svg>
+					<a class="meta-categories__link" href="/categories/%ec%ba%90%ea%b8%80" rel="category">캐글</a></span>
+			</p>
+		</header>
+		<div class="post__content clearfix">
+			<script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="/rmarkdown-libs/jquery/jquery.min.js"></script>
+<link href="/rmarkdown-libs/datatables-css/datatables-crosstalk.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/datatables-binding/datatables.js"></script>
+<link href="/rmarkdown-libs/dt-core/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="/rmarkdown-libs/dt-core/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/dt-core/js/jquery.dataTables.min.js"></script>
+<link href="/rmarkdown-libs/crosstalk/css/crosstalk.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/crosstalk/js/crosstalk.min.js"></script>
+
+
+<center>
+<img src="https://i.pinimg.com/originals/60/0a/f3/600af3325ac7608996d37a0869ec9c23.jpg">
+</center>
+<hr>
+<p><strong>History :</strong></p>
+<ul>
+<li><em>version 1 : initial commit</em></li>
+<li><em>version 2 : added World Cup history, fix some typos, some cosmetics</em></li>
+<li><em>version 3 : added alluvials plots for the matches details</em></li>
+<li><em>version 4 : added work for modeling section, added summary table</em></li>
+<li><em>version 5 : fix logic, reshape code</em></li>
+<li><em>version 6 : update code to find Cup winner, added tables for the 2002 to 2014 editions</em></li>
+<li><em>version 7 : major cleanup and simplification to find the Cup Winner</em></li>
+</ul>
+<hr>
+<pre class="r"><code>#load packages and csv file
+library(ggplot2)
+library(dplyr)
+library(gridExtra)
+library(RColorBrewer)
+library(ggthemes)
+library(viridis)
+library(reshape2)
+library(gridExtra)
+library(scales)
+library(ggalluvial)
+library(knitr)
+library(DT)
+options(DT.options = list(pageLength = 4))</code></pre>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>There are 2 files in this dataset:</p>
+<ul>
+<li>a summary showing all information about all the World Cups in the history.</li>
+<li>details of matches showing all the results from the macthes.</li>
+</ul>
+<p>Plan for the kernel:</p>
+<ul>
+<li>overview</li>
+<li>breakdown by edition and try to make some prediction for the <code>2018</code> edition.</li>
+</ul>
+<p><em>personal comment: for those who remember, PIQUE, the mascot of the 1986 edition, is still the best mascot ever</em></p>
+</div>
+<div id="data-preparation" class="section level1">
+<h1>Data preparation</h1>
+<ul>
+<li>convert the <code>Attendance</code> column to numeric</li>
+<li>make a <code>DateTime</code> variable</li>
+</ul>
+<pre class="r"><code>worldCups &lt;- read.csv(&#39;../../data/WorldCups.csv&#39;,sep=&#39;,&#39;,stringsAsFactors=F)
+worldCups$Attendance &lt;- sapply(worldCups$Attendance, function(x) as.numeric(gsub(&quot;\\.&quot;,&quot;&quot;,x)))
+worldCups$DateTS &lt;- as.Date(paste0(worldCups$Year,&#39;-01-01&#39;))
+#head(worldCups)</code></pre>
+<div id="making-colors-per-countries" class="section level2">
+<h2>Making colors per countries</h2>
+<p>The idea is to associate a unique color per country. That way we can visualizae both the winning countries and host countries in 1 plot.</p>
+<p>Since the color hex code will be a column, I’m using <code>scale_fill_identity()</code>. However it also displays the legend as the <code>hex</code> codes, and not the name of Countries.</p>
+<p>That’s why I made another plot(<code>myleg</code>) to represent the color code.</p>
+<pre class="r"><code>countries &lt;-unique(sort(append(unique(worldCups$Winner),unique(worldCups$Country))))
+cols&lt;-colorRampPalette(brewer.pal(9,&#39;Set1&#39;))(length(countries))
+COLS &lt;- data.frame(color = cols, country = countries)
+COLS$color &lt;- as.character(COLS$color)
+COLS$country &lt;- as.character(COLS$country)
+COLS$index &lt;- 1:nrow(COLS)</code></pre>
+<pre class="r"><code># adding country host color
+worldCups$CountryColor &lt;- sapply(worldCups$Country, function(x) COLS$color[match(x,COLS$country)])
+# adding winner country color
+worldCups$WinnerColor &lt;- sapply(worldCups$Winner, function(x) COLS$color[match(x,COLS$country)])</code></pre>
+<pre class="r"><code># make a legend plot
+myleg&lt;- COLS %&gt;% ggplot(aes(x=reorder(country,-index),y=1)) + 
+  geom_bar(stat=&#39;identity&#39;,aes(fill=color)) + 
+  coord_flip() + scale_fill_identity()+ 
+  theme_fivethirtyeight() + 
+  theme(panel.grid= element_blank() ,axis.text.x = element_blank())</code></pre>
+<pre class="r"><code># add limits for the x-axis
+lims &lt;- as.POSIXct(strptime(c(&quot;1927-01-01&quot;,&quot;2015-01-01&quot;), format = &quot;%Y-%m-%d&quot;))
+# plotof goals vs year
+g1 &lt;- worldCups %&gt;% ggplot(aes(x=as.POSIXct(DateTS),y=GoalsScored)) + 
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1930-01-01&#39;)),alpha=.5) + 
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1934-01-01&#39;)),alpha=.5) + 
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1966-01-01&#39;)),alpha=.5) + 
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1978-01-01&#39;)),alpha=.5) + 
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1998-01-01&#39;)),alpha=.5) + 
+  geom_line(alpha=.1,size=4) + 
+  geom_point(aes(color=WinnerColor),size=4) + 
+  theme_fivethirtyeight() + 
+  scale_x_datetime(limits =lims, date_breaks=&quot;4 year&quot;, labels = date_format(&quot;%Y&quot;)) + 
+  scale_color_identity()
+# add the legend plot
+g11 &lt;- g1 + annotation_custom( ggplotGrob(myleg), 
+                               xmin=as.numeric(as.POSIXct(as.Date(&#39;1922-01-01&#39;))),
+                               xmax=as.numeric(as.POSIXct(as.Date(&#39;1936-01-01&#39;))),
+                               ymin=90,ymax=180) + 
+  labs(title=&#39;Total Goals scored per World Cup&#39;)
+# plot of Attendance vs year                    
+g2 &lt;- worldCups %&gt;% ggplot(aes(x=as.POSIXct(DateTS),y=Attendance)) + 
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1930-01-01&#39;)),alpha=.5) + 
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1934-01-01&#39;)),alpha=.5) + 
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1966-01-01&#39;)),alpha=.5) + 
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1978-01-01&#39;)),alpha=.5) + 
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1998-01-01&#39;)),alpha=.5) + 
+  geom_line(alpha=.1,size=4) + 
+  geom_point(aes(color=CountryColor),size=4) + 
+  theme_fivethirtyeight() + 
+  theme(axis.text.y =element_text(angle=75)) +
+  scale_x_datetime(
+    limits =lims, 
+    date_breaks=&quot;4 year&quot;, 
+    labels = date_format(&quot;%Y&quot;)) +
+  scale_color_identity() + theme(axis.text.x=element_blank()) + labs(
+    title=&#39;Attendance per World Cup&#39;,
+    subtitle=&#39;vertical lines show editions for which the host country also won&#39;)</code></pre>
+<pre class="r"><code># assemble everything
+grid.arrange(g2,g11,ncol=1)</code></pre>
+<p><img src="/post/2018-04-15-kaggle_files/figure-html/unnamed-chunk-7-1.png" width="1152" style="display: block; margin: auto;" /></p>
+<ul>
+<li><code>Uruguay(1930)</code>, <code>Italy(1934)</code>, <code>England(1966)</code> ,<code>Argentina(1978)</code> and <code>France(1998)</code> were the only editions where a host country also won the Cup.</li>
+<li><code>1954</code>, <code>1982</code>, <code>1998</code> and <code>2014</code> will be interesting to investigate because of the spikes in the number of total goals scored.</li>
+</ul>
+</div>
+</div>
+<div id="history-of-the-world-cup" class="section level1">
+<h1>History of the World Cup</h1>
+<p>Via <a href="https://en.wikipedia.org/wiki/History_of_the_FIFA_World_Cup">Wikipedia</a></p>
+<p>Very interesting to read since it reflects somehow events that happened worldwide. For example:</p>
+<ul>
+<li><code>1942</code>: The beginning of European hostilities in late 1939 prompted further plans for the 1942 World Cup to be cancelled, before a host country was selected. The FIFA tournament did not take place</li>
+<li><code>1946</code>: end of WWII</li>
+<li><code>1962</code>: Earthquake in Chile</li>
+<li><code>1966</code>: England hosted the World Cup but South-Africa remained banned until 1992</li>
+</ul>
+<pre class="r"><code>matchesPlayed&lt;-worldCups %&gt;% ggplot(aes(x=as.POSIXct(DateTS),y= MatchesPlayed)) + 
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1930-01-01&#39;)),size=1.5,alpha=1,color=&#39;red&#39;) + 
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1934-01-01&#39;)),size=1.5,alpha=1,color=&#39;darkgreen&#39;) + 
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1938-01-01&#39;)),size=1.5,alpha=1,color=&#39;darkgreen&#39;) + 
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1950-01-01&#39;)),size=1.5,alpha=1,color=&#39;blue&#39;) + 
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1954-01-01&#39;)),size=1.5,alpha=1,color=&#39;gold&#39;) + 
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1970-01-01&#39;)),size=1.5,alpha=1,color=&#39;gold&#39;) + 
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1974-01-01&#39;)),size=1.5,alpha=1,color=&#39;skyblue&#39;) +
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1978-01-01&#39;)),size=1.5,alpha=1,color=&#39;skyblue&#39;) +
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1982-01-01&#39;)),size=1.5,alpha=1,color=&#39;purple&#39;) +
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1986-01-01&#39;)),size=1.5,alpha=1,color=&#39;salmon&#39;) +
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1994-01-01&#39;)),size=1.5,alpha=1,color=&#39;salmon&#39;) + 
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1998-01-01&#39;)),size=1.5,alpha=1,color=&#39;black&#39;) +
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;2014-01-01&#39;)),size=1.5,alpha=1,color=&#39;black&#39;) +
+  geom_line(alpha=.2,size=3) + geom_point(size=3) + theme_fivethirtyeight() +
+  scale_x_datetime(limits =lims, date_breaks=&quot;4 year&quot;, labels = date_format(&quot;%Y&quot;)) + 
+  labs(title=&#39;Matches played&#39;,subtitle=&#39;Lines denote the changes in the format of each final tournament:\nhttps://en.wikipedia.org/wiki/History_of_the_FIFA_World_Cup&#39;) +
+  theme(axis.text.x=element_blank())
+
+qualifiedTeams&lt;-worldCups %&gt;% ggplot(aes(x=as.POSIXct(DateTS),y= QualifiedTeams)) + 
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1930-01-01&#39;)),size=1.5,alpha=1,color=&#39;red&#39;) + 
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1934-01-01&#39;)),size=1.5,alpha=1,color=&#39;darkgreen&#39;) + 
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1938-01-01&#39;)),size=1.5,alpha=1,color=&#39;darkgreen&#39;) + 
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1950-01-01&#39;)),size=1.5,alpha=1,color=&#39;blue&#39;) + 
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1954-01-01&#39;)),size=1.5,alpha=1,color=&#39;gold&#39;) + 
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1970-01-01&#39;)),size=1.5,alpha=1,color=&#39;gold&#39;) + 
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1974-01-01&#39;)),size=1.5,alpha=1,color=&#39;skyblue&#39;) +
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1978-01-01&#39;)),size=1.5,alpha=1,color=&#39;skyblue&#39;) +
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1982-01-01&#39;)),size=1.5,alpha=1,color=&#39;purple&#39;) +
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1986-01-01&#39;)),size=1.5,alpha=1,color=&#39;salmon&#39;) +
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1994-01-01&#39;)),size=1.5,alpha=1,color=&#39;salmon&#39;) + 
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1998-01-01&#39;)),size=1.5,alpha=1,color=&#39;black&#39;) +
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;2014-01-01&#39;)),size=1.5,alpha=1,color=&#39;black&#39;) +
+  geom_line(alpha=.2,size=3) + geom_point(size=3) + 
+  theme_fivethirtyeight() + 
+  scale_x_datetime(limits =lims, date_breaks=&quot;4 year&quot;, labels = date_format(&quot;%Y&quot;)) + 
+  scale_color_identity() + labs(title=&#39;Qualified teams&#39;) + 
+  theme(axis.text.x=element_text(size=11))</code></pre>
+<pre class="r"><code># assemble everything
+grid.arrange(matchesPlayed, qualifiedTeams,ncol=1)</code></pre>
+<p><img src="/post/2018-04-15-kaggle_files/figure-html/unnamed-chunk-9-1.png" width="1152" style="display: block; margin: auto;" /></p>
+</div>
+<div id="matches-details" class="section level1">
+<h1>Matches details</h1>
+<p>This dataset has the following features:</p>
+<ul>
+<li>Year</li>
+<li>DateTime</li>
+<li>Round</li>
+<li>Stadium</li>
+<li>City</li>
+<li>HomeTeam</li>
+<li>HomeGoals</li>
+<li>AwayGoals</li>
+<li>AwayTeam</li>
+<li>Observation</li>
+</ul>
+<p>In this section I want to visualize the results of the finals round, so for simplicity I will gather the <code>Round</code> as <code>Round of 16</code>,<code>Quarter-finals</code>,<code>Semi-finals</code>,<code>Third Place</code>,<code>Final</code>.</p>
+<p>I will also limit these results for World Cup after 1986. Before that time the finals rounds have a different structure.</p>
+<p>First I will create a new column to determine the winner of each play; there are 2 cases to consider :</p>
+<ul>
+<li>the game ended at the 90mn with a winner / loser; here I can use the <code>HomeGoals</code> and <code>AwayGoals</code> to know which team won</li>
+<li>the 90mn ened with a draw score, then the 2 teams went to the penalties goals. Here I use the <code>Observation</code> column to extract the result. An example looks like :</li>
+</ul>
+<pre class="r"><code>Argentina win on penalties (2 - 4)</code></pre>
+<ul>
+<li>the <code>regexp</code> extracts the 2 numbers inside the parenthesis, splits by <code>-</code>, and converts to numeric</li>
+</ul>
+<div id="codes" class="section level2">
+<h2>Codes</h2>
+<ul>
+<li>load file and remove <code>NA's</code></li>
+</ul>
+<pre class="r"><code>df&lt;-read.csv(&#39;../../data/WorldCupMatches.csv&#39;,sep=&#39;,&#39;,stringsAsFactors=F)</code></pre>
+<pre class="r"><code>na_count &lt;-data.frame(sapply(df, function(y) sum(length(which(is.na(y))))))
+colnames(na_count)&lt;-&#39;number&#39;
+names &lt;- rownames(na_count)
+rownames(na_count) &lt;- NULL
+na_count &lt;- cbind(names,na_count)
+na_count$Percentage &lt;- (na_count$number / nrow(df)) * 100
+na_count$Percent &lt;-paste0(round(na_count$Percentage,1),&quot;&quot;)
+ggplot(data=na_count,aes(x=reorder(names,-number),y=number)) + 
+  geom_histogram(stat=&#39;identity&#39;) + 
+  theme(axis.text.x = element_text(angle=90, hjust=1)) + 
+  ylab(&#39;Number of rows&#39;) + xlab(&#39;features&#39;) +
+  geom_text(aes(label=Percent), position=position_dodge(width=0.9), hjust=0.25,vjust=-0.25,size=6,color=&#39;red&#39;)  +theme_fivethirtyeight() + labs(title=&#39;Missing values in dataset&#39;,subtitle=&#39;percentage in red&#39;)</code></pre>
+<p><img src="/post/2018-04-15-kaggle_files/figure-html/unnamed-chunk-12-1.png" width="1152" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>df &lt;- df %&gt;% na.omit()
+# clean up names
+df$AwayTeam &lt;-ifelse(df$AwayTeam ==&#39;IR Iran&#39;,&#39;Iran&#39;,df$AwayTeam)
+df$HomeTeam &lt;-ifelse(df$HomeTeam ==&#39;IR Iran&#39;,&#39;Iran&#39;,df$HomeTeam)</code></pre>
+<ul>
+<li>function to find the winner of each game</li>
+</ul>
+<pre class="r"><code>makeFinalScore&lt;-function(team1, team2, score1, score2, free1, free2){
+    # decision made within time
+    if(score1 != score2){
+        if(score1 &gt; score2){
+            return(team1)
+        }
+        else if(score2&gt;score1){
+            return(team2)
+        }
+    }
+    # decision made with free kicks
+    else{
+        if(free1 &gt; free2){
+            return(team1)
+            }
+            else if(free2&gt;free1){
+            return(team2)
+        }
+    }
+}</code></pre>
+<ul>
+<li>loop over the full dataset, for year &gt; 1982</li>
+</ul>
+<pre class="r"><code>worldCup &lt;- list()
+cnt &lt;- 0
+
+for (edition in seq(1986,2014,4)){
+    cnt &lt;- cnt + 1
+    tempo &lt;- data.frame(df %&gt;% dplyr::filter(Year == edition &amp; (!grepl(&#39;Group&#39;,Round) &amp; !grepl(&#39;Play-off&#39;,Round))))
+    tempo$Team_1_Score &lt;- sapply(tempo$Observation, function(x) as.numeric(trimws(strsplit(gsub(&quot;.*\\((.*)\\).*&quot;,&quot;\\1&quot;,x),&quot;-&quot;)[[1]])[1]))
+    tempo$Team_2_Score &lt;- sapply(tempo$Observation, function(x) as.numeric(trimws(strsplit(gsub(&quot;.*\\((.*)\\).*&quot;,&quot;\\1&quot;,x),&quot;-&quot;)[[1]])[2]))
+    tempo$gameWinner &lt;- mapply(makeFinalScore, tempo$HomeTeam,tempo$AwayTeam, tempo$HomeGoals, tempo$AwayGoals, tempo$Team_1_Score, tempo$Team_2_Score)
+    worldCup[[cnt]] &lt;- tempo
+}</code></pre>
+<ul>
+<li>for the visualization, I’m using <code>alluvial</code> plots(also known as <code>Parallel Coordinates Plot</code>) which are a nice way to represent how data flows accros features</li>
+<li>I regroup all <code>Round</code> related to the <code>Third place</code> into a single one</li>
+</ul>
+<pre class="r"><code>makeSingleAlluvial &lt;- function(mydf, myyear){
+    mydf$Round &lt;- ifelse(mydf$Round %in% c(&#39;Round of 16&#39;,&#39;Quarter-finals&#39;,&#39;Semi-finals&#39;,&#39;Final&#39;),mydf$Round, &quot;Third Place&quot;)
+    gg&lt;-data.frame(mydf %&gt;% group_by(Round, gameWinner) %&gt;% summarise(count=n()))
+    gg$Round &lt;- factor(gg$Round, levels=c(&#39;Round of 16&#39;,&#39;Quarter-finals&#39;,&#39;Semi-finals&#39;,&#39;Third Place&#39;,&#39;Final&#39;))
+    
+    ggplot(gg,aes(axis1 = gg[,2], axis2 = gg[,1])) + 
+    geom_alluvium(aes(fill = factor(gg[,1])),width = 1/12,color=&#39;black&#39;,size=.25) +
+    geom_stratum(width = 1/12, color = &quot;white&quot;,alpha=.1,size=.5) +
+    geom_label(stat = &quot;stratum&quot;, 
+               label.strata = TRUE,
+               size=4.,
+               color=&#39;white&#39;,
+               fill=&#39;black&#39;) +
+    scale_x_continuous(breaks = 1:2, 
+                       labels = c(&#39;round&#39;, &#39;team&#39;)) + scale_fill_brewer(name=&#39;&#39;, palette=&#39;Set1&#39;) + theme_fivethirtyeight() + labs(title=paste0(&#39;Final rounds the &#39;,myyear,&#39; World Cup&#39;)) + theme(legend.position=&#39;bottom&#39;,legend.direction=&#39;horizontal&#39;,axis.text.y = element_blank(),axis.text.x = element_blank(),panel.grid = element_blank())
+}</code></pre>
+<ul>
+<li>I then loop over the dataframes saved in the previous plots, and calls the function to make a single <code>alluvial</code> plot</li>
+</ul>
+<pre class="r"><code>alluvials &lt;- list()
+years &lt;- seq(1986, 2014,4)
+for(i in 1:length(years)){
+    alluvials[[i]] &lt;- makeSingleAlluvial(worldCup[[i]],years[i])
+}</code></pre>
+</div>
+<div id="alluvials-plots-for-world-cups-after-1982" class="section level2">
+<h2><code>Alluvials plots</code> for World Cups after 1982</h2>
+<pre class="r"><code>do.call(grid.arrange, c(alluvials, ncol=2))</code></pre>
+<p><img src="/post/2018-04-15-kaggle_files/figure-html/unnamed-chunk-18-1.png" width="1152" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="prediction-modeling" class="section level1">
+<h1>Prediction / modeling</h1>
+<p>The idea is to look at the results of the preliminary phases only (ie before <code>Round of 16</code>) and find features to characterize the final outcome of the Cup. The reason is because some teams are already removed after these preliminary phases so there will no be predictive power.</p>
+<p>I may also use the aggregated dataset to know whether the host country won or lost ; we can think of a team being <code>supported</code> at the national level as an important feature.</p>
+<p>I cannot use the final number of wins or goals because these are <code>final</code> results hence are not related to the preliminary phases.</p>
+<p>The features I’m thinking of:</p>
+<ul>
+<li>number of wins</li>
+<li>number of draws</li>
+<li>number of goals</li>
+</ul>
+<div id="tables-for-the-preliminary-rounds" class="section level2">
+<h2>Tables for the <code>Preliminary Rounds</code></h2>
+<p>Some work is needed to <code>flatten</code> the dataset since it has all the matches, ir each row is the result of as single match, whereas we want 1 row per Country.</p>
+<div id="some-codes" class="section level3">
+<h3>Some codes</h3>
+<pre class="r"><code># function to determine the winner/loser of each match
+makeFinalScoreRound&lt;-function(team1, team2, score1, score2){
+        if(score1 &gt; score2){
+            return(team1)
+        }
+        else if(score2&gt;score1){
+            return(team2)
+        }
+        else {return(&#39;Draw&#39;)
+    }
+}</code></pre>
+<pre class="r"><code># function to calculate the number of points of each game
+makePointsRound&lt;-function(team1, team2, score1, score2){
+            #win
+        if(score1 &gt; score2){
+            return(3)
+        }
+        #loose
+        else if(score2&gt;score1){
+            return(0)
+        }
+        #draw
+        else {return(1)
+    }
+}</code></pre>
+<ul>
+<li>main code / function</li>
+</ul>
+<pre class="r"><code>makeGroupSummary &lt;- function(myyear){
+  
+  df2 &lt;- df %&gt;% filter(Year==myyear)
+  groups &lt;- data.frame(df2 %&gt;% filter(grepl(&#39;Group&#39;,Round)))
+  groups$gameWinner &lt;- mapply(makeFinalScoreRound, groups$HomeTeam,groups$AwayTeam, groups$HomeGoals, groups$AwayGoals)
+  groups$Team_1_Score &lt;- mapply(makePointsRound, groups$HomeTeam,groups$AwayTeam, groups$HomeGoals, groups$AwayGoals)
+  groups$Team_2_Score &lt;- mapply(makePointsRound, groups$AwayTeam,groups$HomeTeam, groups$AwayGoals, groups$HomeGoals)
+  
+  groupList &lt;- list()
+  cnt&lt;-0
+  for(mygroup in unique(groups$Round)){
+    cnt&lt;-cnt+1
+    dat0 &lt;- data.frame(groups %&gt;% filter(Round == mygroup))
+    dat1 &lt;- data.frame(rbind(
+      dat0 %&gt;% group_by(HomeTeam) %&gt;% summarise(count = n(), points = sum(Team_1_Score), goals= sum(HomeGoals)) %&gt;% rename(team = HomeTeam),
+      dat0 %&gt;% group_by(AwayTeam) %&gt;% summarise(count=n(), points = sum(Team_2_Score), goals = sum(AwayGoals)) %&gt;% rename(team = AwayTeam)))
+    dat2 &lt;- data.frame(dat1 %&gt;% group_by(team) %&gt;% summarise(totGames = sum(count), totPoints = sum(points), totGoals = sum(goals)) %&gt;% arrange(-totPoints,-totGoals))
+    dat2$rank&lt;-c(1:4)
+    dat2$Group &lt;- rep(mygroup,4)
+    groupList[[cnt]] &lt;- dat2
+    }
+  
+  RES&lt;-data.frame(do.call(&quot;rbind&quot;,groupList))
+  
+  # find the winner with the previous dataset
+  winner &lt;-(worldCups %&gt;% filter(Year==myyear) %&gt;% select(Winner))$Winner
+ 
+  RES$hasWon&lt;-ifelse(RES$team == winner,&#39;WON&#39;,&#39;LOST&#39;)
+  
+  return(RES)
+}</code></pre>
+</div>
+<div id="results-for-the-1998-edition" class="section level3">
+<h3>Results for the <code>1998</code> edition</h3>
+<ul>
+<li>France (<code>group C</code>, 4th tab) won.</li>
+</ul>
+<pre class="r"><code>edition_1998 &lt;- makeGroupSummary(1998)</code></pre>
+<pre class="r"><code>options(DT.options = list(pageLength = 4))
+datatable(edition_1998) %&gt;% 
+  formatStyle(
+  &#39;rank&#39;,
+  target = &#39;row&#39;,
+  backgroundColor = styleEqual(c(1, 2, 3, 4), c(&#39;greenyellow&#39;,&#39;greenyellow&#39;,&#39;gray40&#39;, &#39;gray80&#39;))
+)</code></pre>
+<div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32"],["Brazil","Norway","Morocco","Scotland","Italy","Chile","Austria","Cameroon","Nigeria","Paraguay","Spain","Bulgaria","France","Denmark","South Africa","Saudi Arabia","Mexico","Netherlands","Belgium","Korea Republic","Argentina","Croatia","Jamaica","Japan","Germany","Yugoslavia","Iran","USA","Romania","England","Colombia","Tunisia"],[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],[6,5,4,1,7,3,2,2,6,5,4,1,9,4,2,1,5,5,3,1,9,6,3,0,7,7,3,0,7,6,3,1],[6,5,5,2,7,4,3,2,5,3,8,1,9,3,3,2,7,7,3,2,7,4,3,1,6,4,2,1,4,5,1,1],[1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4],["Group A","Group A","Group A","Group A","Group B","Group B","Group B","Group B","Group D","Group D","Group D","Group D","Group C","Group C","Group C","Group C","Group E","Group E","Group E","Group E","Group H","Group H","Group H","Group H","Group F","Group F","Group F","Group F","Group G","Group G","Group G","Group G"],["LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","WON","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>team<\/th>\n      <th>totGames<\/th>\n      <th>totPoints<\/th>\n      <th>totGoals<\/th>\n      <th>rank<\/th>\n      <th>Group<\/th>\n      <th>hasWon<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":4,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[4,10,25,50,100],"rowCallback":"function(row, data) {\nvar value=data[5]; $(row).css({'background-color':value == '1' ? 'greenyellow' : value == '2' ? 'greenyellow' : value == '3' ? 'gray40' : value == '4' ? 'gray80' : ''});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+</div>
+<div id="results-for-the-2002-edition" class="section level3">
+<h3>Results for the <code>2002</code> edition</h3>
+<ul>
+<li>Brazil (<code>group C</code>, 5th tab) won.</li>
+</ul>
+<pre class="r"><code>edition_2002 &lt;- makeGroupSummary(2002)</code></pre>
+<pre class="r"><code>options(DT.options = list(pageLength = 4))
+datatable(edition_2002) %&gt;% 
+  formatStyle(
+  &#39;rank&#39;,
+  target = &#39;row&#39;,
+  backgroundColor = styleEqual(c(1, 2, 3, 4), c(&#39;greenyellow&#39;,&#39;greenyellow&#39;,&#39;gray40&#39;, &#39;gray80&#39;))
+)</code></pre>
+<div id="htmlwidget-2" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-2">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32"],["Denmark","Senegal","Uruguay","France","Germany","Republic of Ireland","Cameroon","Saudi Arabia","Sweden","England","Argentina","Nigeria","Spain","Paraguay","South Africa","Slovenia","Brazil","Costa Rica","Turkey","China PR","Mexico","Italy","Croatia","Ecuador","Japan","Belgium","Russia","Tunisia","Korea Republic","USA","Portugal","Poland"],[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],[7,5,2,1,7,5,4,0,5,5,4,1,9,4,4,0,9,4,4,0,7,4,3,3,7,5,3,1,7,4,3,3],[5,5,4,0,11,5,2,0,4,2,2,1,9,6,5,2,11,5,5,0,4,4,2,2,5,6,4,1,4,5,6,3],[1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4],["Group A","Group A","Group A","Group A","Group E","Group E","Group E","Group E","Group F","Group F","Group F","Group F","Group B","Group B","Group B","Group B","Group C","Group C","Group C","Group C","Group G","Group G","Group G","Group G","Group H","Group H","Group H","Group H","Group D","Group D","Group D","Group D"],["LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","WON","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>team<\/th>\n      <th>totGames<\/th>\n      <th>totPoints<\/th>\n      <th>totGoals<\/th>\n      <th>rank<\/th>\n      <th>Group<\/th>\n      <th>hasWon<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":4,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[4,10,25,50,100],"rowCallback":"function(row, data) {\nvar value=data[5]; $(row).css({'background-color':value == '1' ? 'greenyellow' : value == '2' ? 'greenyellow' : value == '3' ? 'gray40' : value == '4' ? 'gray80' : ''});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+</div>
+<div id="results-for-the-2006-edition" class="section level3">
+<h3>Results for the <code>2006</code> edition</h3>
+<ul>
+<li>Italy (<code>group E</code>, 6th tab) won.</li>
+</ul>
+<pre class="r"><code>edition_2006 &lt;- makeGroupSummary(2002)</code></pre>
+<pre class="r"><code>options(DT.options = list(pageLength = 4))
+datatable(edition_2006) %&gt;% 
+  formatStyle(
+  &#39;rank&#39;,
+  target = &#39;row&#39;,
+  backgroundColor = styleEqual(c(1, 2, 3, 4), c(&#39;greenyellow&#39;,&#39;greenyellow&#39;,&#39;gray40&#39;, &#39;gray80&#39;))
+)</code></pre>
+<div id="htmlwidget-3" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-3">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32"],["Denmark","Senegal","Uruguay","France","Germany","Republic of Ireland","Cameroon","Saudi Arabia","Sweden","England","Argentina","Nigeria","Spain","Paraguay","South Africa","Slovenia","Brazil","Costa Rica","Turkey","China PR","Mexico","Italy","Croatia","Ecuador","Japan","Belgium","Russia","Tunisia","Korea Republic","USA","Portugal","Poland"],[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],[7,5,2,1,7,5,4,0,5,5,4,1,9,4,4,0,9,4,4,0,7,4,3,3,7,5,3,1,7,4,3,3],[5,5,4,0,11,5,2,0,4,2,2,1,9,6,5,2,11,5,5,0,4,4,2,2,5,6,4,1,4,5,6,3],[1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4],["Group A","Group A","Group A","Group A","Group E","Group E","Group E","Group E","Group F","Group F","Group F","Group F","Group B","Group B","Group B","Group B","Group C","Group C","Group C","Group C","Group G","Group G","Group G","Group G","Group H","Group H","Group H","Group H","Group D","Group D","Group D","Group D"],["LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","WON","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>team<\/th>\n      <th>totGames<\/th>\n      <th>totPoints<\/th>\n      <th>totGoals<\/th>\n      <th>rank<\/th>\n      <th>Group<\/th>\n      <th>hasWon<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":4,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[4,10,25,50,100],"rowCallback":"function(row, data) {\nvar value=data[5]; $(row).css({'background-color':value == '1' ? 'greenyellow' : value == '2' ? 'greenyellow' : value == '3' ? 'gray40' : value == '4' ? 'gray80' : ''});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+</div>
+<div id="results-for-the-2010-edition" class="section level3">
+<h3>Results for the <code>2010</code> edition</h3>
+<ul>
+<li>Spain (<code>group H</code>, 8th tab) won.</li>
+</ul>
+<pre class="r"><code>edition_2010 &lt;- makeGroupSummary(2010)</code></pre>
+<pre class="r"><code>options(DT.options = list(pageLength = 4))
+datatable(edition_2010) %&gt;% 
+  formatStyle(
+  &#39;rank&#39;,
+  target = &#39;row&#39;,
+  backgroundColor = styleEqual(c(1, 2, 3, 4), c(&#39;greenyellow&#39;,&#39;greenyellow&#39;,&#39;gray40&#39;, &#39;gray80&#39;))
+)</code></pre>
+<div id="htmlwidget-4" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-4">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32"],["Uruguay","Mexico","South Africa","France","Argentina","Korea Republic","Greece","Nigeria","USA","England","Slovenia","Algeria","Germany","Australia","Ghana","Serbia","Netherlands","Japan","Denmark","Cameroon","Paraguay","Slovakia","New Zealand","Italy","Brazil","Portugal","C<ef><bf><bd>te d'Ivoire","Korea DPR","Spain","Chile","Switzerland","Honduras"],[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],[7,4,4,1,9,4,3,1,5,5,4,1,6,4,4,3,9,6,3,0,5,4,3,2,7,5,4,0,6,6,4,1],[4,3,3,1,7,5,2,3,4,2,3,0,5,3,2,2,5,4,3,2,3,4,2,4,5,7,4,1,4,3,1,0],[1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4],["Group A","Group A","Group A","Group A","Group B","Group B","Group B","Group B","Group C","Group C","Group C","Group C","Group D","Group D","Group D","Group D","Group E","Group E","Group E","Group E","Group F","Group F","Group F","Group F","Group G","Group G","Group G","Group G","Group H","Group H","Group H","Group H"],["LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","WON","LOST","LOST","LOST"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>team<\/th>\n      <th>totGames<\/th>\n      <th>totPoints<\/th>\n      <th>totGoals<\/th>\n      <th>rank<\/th>\n      <th>Group<\/th>\n      <th>hasWon<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":4,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[4,10,25,50,100],"rowCallback":"function(row, data) {\nvar value=data[5]; $(row).css({'background-color':value == '1' ? 'greenyellow' : value == '2' ? 'greenyellow' : value == '3' ? 'gray40' : value == '4' ? 'gray80' : ''});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+</div>
+<div id="results-for-the-2014-edition" class="section level3">
+<h3>Results for the <code>2014</code> edition</h3>
+<ul>
+<li>Germany (<code>group G</code>, 7th tab) won.</li>
+</ul>
+<pre class="r"><code>edition_2014 &lt;- makeGroupSummary(2014)</code></pre>
+<pre class="r"><code>options(DT.options = list(pageLength = 4))
+datatable(edition_2014) %&gt;% 
+  formatStyle(
+  &#39;rank&#39;,
+  target = &#39;row&#39;,
+  backgroundColor = styleEqual(c(1, 2, 3, 4), c(&#39;greenyellow&#39;,&#39;greenyellow&#39;,&#39;gray40&#39;, &#39;gray80&#39;))
+)</code></pre>
+<div id="htmlwidget-5" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-5">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32"],["Brazil","Mexico","Croatia","Cameroon","Netherlands","Chile","Spain","Australia","Colombia","Greece","C<ef><bf><bd>te d'Ivoire","Japan","Costa Rica","Uruguay","Italy","England","France","Switzerland","Ecuador","Honduras","Argentina","Nigeria","Bosnia and Herzegovina","Iran","Germany","Portugal","USA","Ghana","Belgium","Algeria","Russia","Korea Republic"],[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],[7,7,3,0,9,6,3,0,9,4,3,1,7,6,3,1,7,6,4,0,9,4,3,1,7,4,4,1,9,4,2,1],[7,4,6,1,10,5,4,3,9,2,4,2,4,4,2,2,8,7,3,1,6,3,4,1,7,4,4,4,4,6,2,3],[1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4],["Group A","Group A","Group A","Group A","Group B","Group B","Group B","Group B","Group C","Group C","Group C","Group C","Group D","Group D","Group D","Group D","Group E","Group E","Group E","Group E","Group F","Group F","Group F","Group F","Group G","Group G","Group G","Group G","Group H","Group H","Group H","Group H"],["LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","LOST","WON","LOST","LOST","LOST","LOST","LOST","LOST","LOST"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>team<\/th>\n      <th>totGames<\/th>\n      <th>totPoints<\/th>\n      <th>totGoals<\/th>\n      <th>rank<\/th>\n      <th>Group<\/th>\n      <th>hasWon<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":4,"columnDefs":[{"className":"dt-right","targets":[2,3,4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[4,10,25,50,100],"rowCallback":"function(row, data) {\nvar value=data[5]; $(row).css({'background-color':value == '1' ? 'greenyellow' : value == '2' ? 'greenyellow' : value == '3' ? 'gray40' : value == '4' ? 'gray80' : ''});\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+</div>
+</div>
+<div id="generalizing-to-the-other-editions" class="section level2">
+<h2>Generalizing to the other editions</h2>
+<pre class="r"><code>df$DateTS &lt;- as.Date(paste0(df$Year,&#39;-01-01&#39;))
+df %&gt;% filter(grepl(&#39;Group&#39;,Round)) %&gt;% group_by(DateTS, Round) %&gt;% summarise(count=n()) %&gt;%
+  ggplot(aes(x=as.POSIXct(DateTS),y=count,fill=Round)) + 
+  geom_bar(stat=&#39;identity&#39;,color=&#39;black&#39;,size=.5) + 
+  scale_fill_manual(values = colorRampPalette(brewer.pal(12,&#39;Paired&#39;))(14)) + 
+  theme_fivethirtyeight(14) + 
+  labs(title=&#39;Preliminary groups structure&#39;,subtitle=&#39;represented are the number of teams in each group&#39;)+ 
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1972-01-01&#39;)),color=&#39;red&#39;) + 
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1980-01-01&#39;)),color=&#39;red&#39;) + 
+  geom_vline(xintercept= as.POSIXct(as.Date(&#39;1984-01-01&#39;)),color=&#39;red&#39;)</code></pre>
+<p><img src="/post/2018-04-15-kaggle_files/figure-html/unnamed-chunk-32-1.png" width="1152" style="display: block; margin: auto;" /></p>
+<p>The issues with the preliminary groups over time are :</p>
+<ul>
+<li>different number of groups</li>
+<li>different notations: between 1970 and 1982, they were labelled with number and letter</li>
+<li>after 1992, the number of preliminary groups is the same(only letters) so I can start with that period</li>
+</ul>
+</div>
+</div>
+
+		</div>
+		
+<div class="post__tags tags clearfix">
+	<svg class="icon icon-tag" width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="m4.73135 3.3795002q0-.5597-.39604-.9557-.39604-.3961-.95577-.3961-.55974 0-.95578.3961-.39604.396-.39604.9557 0 .5598.39604.9558.39604.3961.95578.3961.55973 0 .95577-.3961.39604-.396.39604-.9558zm11.26865 6.0832q0 .5596998-.39076.9504998l-5.18548 5.196q-.41188.3908-.9610504.3908-.55974 0-.9505-.3908l-7.5511496-7.5616998q-.40132-.3907-.68119-1.0666-.27987-.6759-.27987-1.2357v-4.3934q0-.54920004.40132-.95050004.40132-.4013.9505-.4013h4.39339q.55974 0 1.23565.2799.67591.2798 1.07723.6812l7.55115 7.54060004q.39076.4118.39076.961z"/></svg>
+	<ul class="tags__list">
+		<li class="tags__item"><a class="tags__link" href="/tags/%EC%BA%90%EA%B8%80/" rel="tag">캐글</a></li>
+		<li class="tags__item"><a class="tags__link" href="/tags/%EC%8B%9C%EA%B0%81%ED%99%94/" rel="tag">시각화</a></li>
+		<li class="tags__item"><a class="tags__link" href="/tags/%EC%8A%A4%ED%8F%AC%EC%B8%A0/" rel="tag">스포츠</a></li>
+	</ul>
+</div>
+
+	</article>
+	
+<div class="authorbox clearfix">
+	<figure class="authorbox__avatar">
+		<img alt="THE-R avatar" src="/img/THE-R.jpg" class="avatar" height="90" width="90">
+	</figure>
+	<div class="authorbox__header">
+		<span class="authorbox__name">About THE-R</span>
+	</div>
+	<div class="authorbox__description">
+		THE-R 편집자 입니다
+	</div>
+</div>
+	
+<nav class="post-nav row clearfix" itemscope="itemscope" itemtype="http://schema.org/SiteNavigationElement">
+	<div class="post-nav__item post-nav__item--prev col-1-2">
+		<a class="post-nav__link" href="/2018/04/12/rpackage-network3d/" rel="prev"><span class="post-nav__caption">«Previous</span><p class="post-nav__post-title">[R 패키지] 3D 네트워크 시각화 - network3d</p></a>
+	</div>
+</nav>
+
+	
+<div class="comments">
+	<div id="disqus_thread"></div>
+<script>
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "THE-R" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+
+</main>
+
+<aside class="sidebar" itemscope="itemscope" itemtype="http://schema.org/WPSideBar">
+	
+<div class="widget-search widget">
+	<form class="widget-search__form" role="search" method="get" action="//google.com/search">
+		<label>
+			<span class="screen-reader-text">Search for:</span>
+			<input class="widget-search__field" type="search" placeholder="SEARCH..." value="" name="q">
+		</label>
+		<input class="widget-search__submit" type="submit" value="Search">
+		<input type="hidden" name="sitesearch" value="/" />
+	</form>
+</div>
+	
+<div class="widget-recent widget">
+	<h4 class="widget__title">Recent Posts</h4>
+	<div class="widget__content">
+		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="/2018/04/15/kaggle/">Kaggle 예제</a></li>
+			<li class="widget__item"><a class="widget__link" href="/2018/04/12/rpackage-network3d/">[R 패키지] 3D 네트워크 시각화 - network3d</a></li>
+			<li class="widget__item"><a class="widget__link" href="/2016/12/30/a-plain-markdown-post/">A Plain Markdown Post</a></li>
+			<li class="widget__item"><a class="widget__link" href="/2015/07/23/hello-r-markdown/">Hello R Markdown</a></li>
+			<li class="widget__item"><a class="widget__link" href="/2015/01/01/lorem-ipsum/">Lorem Ipsum</a></li>
+		</ul>
+	</div>
+</div>
+
+	
+<div class="widget-categories widget">
+	<h4 class="widget__title">Categories</h4>
+	<div class="widget__content">
+		<ul class="widget__list">
+			<li class="widget__item"><a class="widget__link" href="/categories/r">R</a></li>
+			<li class="widget__item"><a class="widget__link" href="/categories/r-%ed%8c%a8%ed%82%a4%ec%a7%80">R-패키지</a></li>
+			<li class="widget__item"><a class="widget__link" href="/categories/%ec%ba%90%ea%b8%80">캐글</a></li>
+		</ul>
+	</div>
+</div>
+	
+<div class="widget-social widget">
+	<h4 class="widget-social__title widget__title">Social</h4>
+	<div class="widget-social__content widget__content">
+		<div class="widget-social__item widget__item">
+			<a class="widget-social__link widget__link btn" title="Facebook" rel="noopener noreferrer" href="https://facebook.com/THER4U" target="_blank">
+				<svg class="widget-social__link-icon icon-facebook" viewBox="0 0 352 352" width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="#fff"><path d="m0 32v288c0 17.5 14.5 32 32 32h288c17.5 0 32-14.5 32-32v-288c0-17.5-14.5-32-32-32h-288c-17.5 0-32 14.5-32 32zm320 0v288h-83v-108h41.5l6-48h-47.5v-31c0-14 3.5-23.5 23.5-23.5h26v-43.5c-4.4-.6-19.8-1.5-37.5-1.5-36.9 0-62 22.2-62 63.5v36h-42v48h42v108h-155v-288z"/></svg>
+				<span>Facebook</span>
+			</a>
+		</div>
+		
+		<div class="widget-social__item widget__item">
+			<a class="widget-social__link widget__link btn" title="Twitter" rel="noopener noreferrer" href="https://twitter.com/The_R_blog" target="_blank">
+				<svg class="widget-social__link-icon icon-twitter" viewBox="0 0 384 312" width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="#fff"><path d="m384 36.9c-14.1 6.3-29.3 10.5-45.2 12.4 16.3-9.7 28.8-25.2 34.6-43.6-15.2 9-32.1 15.6-50 19.1-14.4-15.2-34.9-24.8-57.5-24.8-43.5 0-78.8 35.3-78.8 78.8 0 6.2.7 12.2 2 17.9-65.5-3.3-123.5-34.6-162.4-82.3-6.7 11.6-10.6 25.2-10.6 39.6 0 27.3 13.9 51.4 35 65.6-12.9-.4-25.1-4-35.7-9.9v1c0 38.2 27.2 70 63.2 77.2-6.6 1.8-13.6 2.8-20.8 2.8-5.1 0-10-.5-14.8-1.4 10 31.3 39.1 54.1 73.6 54.7-27 21.1-60.9 33.7-97.8 33.7-6.4 0-12.6-.4-18.8-1.1 34.9 22.4 76.3 35.4 120.8 35.4 144.9 0 224.1-120 224.1-224.1 0-3.4-.1-6.8-.2-10.2 15.4-11.1 28.7-25 39.3-40.8z"/></svg>
+				<span>Twitter</span>
+			</a>
+		</div>
+		<div class="widget-social__item widget__item">
+			<a class="widget-social__link widget__link btn" title="LinkedIn" rel="noopener noreferrer" href="https://linkedin.com/in/irichgreen" target="_blank">
+				<svg class="widget-social__link-icon icon-linkedin" viewBox="0 0 352 352" width="24" height="24" fill="#fff" xmlns="http://www.w3.org/2000/svg"><path d="M0,40v272c0,21.9,18.1,40,40,40h272c21.9,0,40-18.1,40-40V40c0-21.9-18.1-40-40-40H40C18.1,0,0,18.1,0,40z M312,32 c4.6,0,8,3.4,8,8v272c0,4.6-3.4,8-8,8H40c-4.6,0-8-3.4-8-8V40c0-4.6,3.4-8,8-8H312z M59.5,87c0,15.2,12.3,27.5,27.5,27.5 c15.2,0,27.5-12.3,27.5-27.5c0-15.2-12.3-27.5-27.5-27.5C71.8,59.5,59.5,71.8,59.5,87z M187,157h-1v-21h-45v152h47v-75 c0-19.8,3.9-39,28.5-39c24.2,0,24.5,22.4,24.5,40v74h47v-83.5c0-40.9-8.7-72-56.5-72C208.5,132.5,193.3,145.1,187,157z M64,288h47.5 V136H64V288z"/></svg>
+				<span>LinkedIn</span>
+			</a>
+		</div>
+		<div class="widget-social__item widget__item">
+			<a class="widget-social__link widget__link btn" title="GitHub" rel="noopener noreferrer" href="https://github.com/the-r4u" target="_blank">
+				<svg class="widget-social__link-icon icon-github" viewBox="0 0 384 374" width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="#fff"><path d="m192 0c-106.1 0-192 85.8-192 191.7 0 84.7 55 156.6 131.3 181.9 9.6 1.8 13.1-4.2 13.1-9.2 0-4.6-.2-16.6-.3-32.6-53.4 11.6-64.7-25.7-64.7-25.7-8.7-22.1-21.3-28-21.3-28-17.4-11.9 1.3-11.6 1.3-11.6 19.3 1.4 29.4 19.8 29.4 19.8 17.1 29.3 44.9 20.8 55.9 15.9 1.7-12.4 6.7-20.8 12.2-25.6-42.6-4.8-87.5-21.3-87.5-94.8 0-20.9 7.5-38 19.8-51.4-2-4.9-8.6-24.3 1.9-50.7 0 0 16.1-5.2 52.8 19.7 15.3-4.2 31.7-6.4 48.1-6.5 16.3.1 32.7 2.2 48.1 6.5 36.7-24.8 52.8-19.7 52.8-19.7 10.5 26.4 3.9 45.9 1.9 50.7 12.3 13.4 19.7 30.5 19.7 51.4 0 73.7-44.9 89.9-87.7 94.6 6.9 5.9 13 17.6 13 35.5 0 25.6-.2 46.3-.2 52.6 0 5.1 3.5 11.1 13.2 9.2 76.2-25.5 131.2-97.3 131.2-182 0-105.9-86-191.7-192-191.7z"/></svg>
+				<span>GitHub</span>
+			</a>
+		</div>
+		<div class="widget-social__item widget__item">
+			<a class="widget-social__link widget__link btn" title="Google Plus" rel="noopener noreferrer" href="https://plus.google.com/profileid" target="_blank">
+				<svg class="widget-social__link-icon icon-googleplus" viewBox="0 0 512 512" width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="#fff"><path d="M0 279c-2-92 66-170 156-173 43-2 83 15 115 45l-43 45C201 177 167 164 132 177c-53 19-81 81-62 136s79 85 132 64c28-11 45-38 53-64l-92 0v-60H320c0 49-4 98-34 136-60 70-162 77-228 15C22 373 2 328 0 279L0 279zM418 205h47l0 49H512v49h-47l0 49h-47v-49h-47v-49h47V205z"/></svg>
+				<span>profileid</span>
+			</a>
+		</div>
+		<div class="widget-social__item widget__item">
+			<a class="widget-social__link widget__link btn" title="Email" href="mailto:ceo@the-r.kr">
+				<svg class="widget-social__link-icon icon-mail" viewBox="0 0 416 288" width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="#fff"><path d="m0 16v256 16h16 384 16v-16-256-16h-16-384-16zm347 16-139 92.5-139-92.5zm-148 125.5 9 5.5 9-5.5 167-111.5v210h-352v-210z"/></svg>
+				<span>ceo@the-r.kr</span>
+			</a>
+		</div>
+	</div>
+</div>
+
+	
+<div class="widget-taglist widget">
+	<h4 class="widget__title">Tags</h4>
+	<div class="widget__content">
+		<a class="widget__link widget__link--taglist" href="/tags/network3d" title="network3d">network3d (1)</a>
+		<a class="widget__link widget__link--taglist" href="/tags/plot" title="plot">plot (1)</a>
+		<a class="widget__link widget__link--taglist" href="/tags/r-markdown" title="r-markdown">r-markdown (2)</a>
+		<a class="widget__link widget__link--taglist" href="/tags/r-%ed%8c%a8%ed%82%a4%ec%a7%80" title="r-패키지">r-패키지 (1)</a>
+		<a class="widget__link widget__link--taglist" href="/tags/regression" title="regression">regression (1)</a>
+		<a class="widget__link widget__link--taglist" href="/tags/%ec%8a%a4%ed%8f%ac%ec%b8%a0" title="스포츠">스포츠 (1)</a>
+		<a class="widget__link widget__link--taglist" href="/tags/%ec%8b%9c%ea%b0%81%ed%99%94" title="시각화">시각화 (2)</a>
+		<a class="widget__link widget__link--taglist" href="/tags/%ec%ba%90%ea%b8%80" title="캐글">캐글 (1)</a>
+	</div>
+</div>
+</aside>
+
+	</div>
+		<footer class="footer" itemscope="itemscope" itemtype="http://schema.org/WPFooter">
+			<div class="container container-inner">
+				<p class="footer__copyright">&copy; 2018 THE-R. <span class="footer__copyright-credits">Generated with <a href="https://gohugo.io/" rel="nofollow noopener" target="_blank">Hugo</a> and <a href="https://github.com/Vimux/Mainroad/" rel="nofollow noopener" target="_blank">Mainroad theme</a>.</span></p>
+			</div>
+		</footer>
+	</div>
+
+<script>
+	var navigation = responsiveNav(".menu", {
+		navClass: "menu--collapse",
+	});
+</script>
+</body>
+</html>

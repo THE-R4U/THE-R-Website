@@ -6,10 +6,20 @@
     <description>Recent content in 시각화 on THE-R</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 12 Apr 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 15 Apr 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/%EC%8B%9C%EA%B0%81%ED%99%94/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Kaggle 예제</title>
+      <link>/2018/04/15/kaggle/</link>
+      <pubDate>Sun, 15 Apr 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/2018/04/15/kaggle/</guid>
+      <description>History :
+ version 1 : initial commit version 2 : added World Cup history, fix some typos, some cosmetics version 3 : added alluvials plots for the matches details version 4 : added work for modeling section, added summary table version 5 : fix logic, reshape code version 6 : update code to find Cup winner, added tables for the 2002 to 2014 editions version 7 : major cleanup and simplification to find the Cup Winner   #load packages and csv file library(ggplot2) library(dplyr) library(gridExtra) library(RColorBrewer) library(ggthemes) library(viridis) library(reshape2) library(gridExtra) library(scales) library(ggalluvial) library(knitr) library(DT) options(DT.</description>
+    </item>
     
     <item>
       <title>[R 패키지] 3D 네트워크 시각화 - network3d</title>
