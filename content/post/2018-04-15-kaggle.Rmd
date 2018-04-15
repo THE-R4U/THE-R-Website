@@ -53,6 +53,7 @@ options(DT.options = list(pageLength = 4))
 # Introduction
 
 There are 2 files in this dataset:
+2개의 데이터셋이 있습니다.
 
 * a summary showing all information about all the World Cups in the history.
 * details of matches showing all the results from the macthes.
