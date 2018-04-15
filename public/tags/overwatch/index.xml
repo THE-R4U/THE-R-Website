@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>캐글 on THE-R</title>
-    <link>/tags/%EC%BA%90%EA%B8%80/</link>
-    <description>Recent content in 캐글 on THE-R</description>
+    <title>Overwatch on THE-R</title>
+    <link>/tags/overwatch/</link>
+    <description>Recent content in Overwatch on THE-R</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Sun, 15 Apr 2018 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="/tags/%EC%BA%90%EA%B8%80/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="/tags/overwatch/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -42,16 +42,6 @@ code_folding: show
       <description>title: &amp;ldquo;Overwatch: who should I main ?&amp;rdquo; author: &amp;ldquo;Jonathan Bouchet&amp;rdquo; date: &amp;ldquo;2018-04-15&amp;rdquo; output: html_document: fig_width: 10 fig_height: 7 toc: yes number_sections : yes
 code_folding: show 
 #load packages and csv file library(ggplot2) library(dplyr) library(gridExtra) library(fmsb) library(ggthemes) library(ggridges) library(RColorBrewer) library(grid) library(gridExtra) library(ggrepel) library(GGally) library(gplots) library(ggdendro) library(factoextra) library(NbClust) library(corrplot) library(corrgram)  _warning: according the data the dataset was posted, I estimated it to correspond to patch 1.8.0.2(February 28, 2017), so the data here may not reflect the actual characteristics of the Heroes_</description>
-    </item>
-    
-    <item>
-      <title>[캐글] 월드컵 골 분석</title>
-      <link>/2018/04/15/worldcup-goal/</link>
-      <pubDate>Sun, 15 Apr 2018 00:00:00 +0000</pubDate>
-      
-      <guid>/2018/04/15/worldcup-goal/</guid>
-      <description>History :
- version 1 : initial commit version 2 : added World Cup history, fix some typos, some cosmetics version 3 : added alluvials plots for the matches details version 4 : added work for modeling section, added summary table version 5 : fix logic, reshape code version 6 : update code to find Cup winner, added tables for the 2002 to 2014 editions version 7 : major cleanup and simplification to find the Cup Winner   #load packages and csv file library(ggplot2) library(dplyr) library(gridExtra) library(RColorBrewer) library(ggthemes) library(viridis) library(reshape2) library(gridExtra) library(scales) library(ggalluvial) library(knitr) library(DT) options(DT.</description>
     </item>
     
   </channel>

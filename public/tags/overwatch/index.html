@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>시각화</title>
+<title>Overwatch</title>
 <meta name="description" content=" R 데이터분석에 필요한 패키지 활용, 교육정보 제공">
 <meta name="generator" content="Hugo 0.38.1" />
-<meta property="og:title" content="시각화" />
+<meta property="og:title" content="Overwatch" />
 <meta property="og:description" content=" R 데이터분석에 필요한 패키지 활용, 교육정보 제공" />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="/tags/%EC%8B%9C%EA%B0%81%ED%99%94/" />
+<meta property="og:url" content="/tags/overwatch/" />
 
 
 
@@ -26,7 +26,7 @@
 
 <link rel="dns-prefetch" href="//fonts.googleapis.com" />
 <link rel="dns-prefetch" href="//fonts.gstatic.com" />
-<link rel="alternate" type="application/rss+xml" title="THE-R Feed" href="/tags/%EC%8B%9C%EA%B0%81%ED%99%94/index.xml">
+<link rel="alternate" type="application/rss+xml" title="THE-R Feed" href="/tags/overwatch/index.xml">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700" type="text/css" media="all" />
 <link rel="stylesheet" href="/css/style.css" type="text/css" media="all" />
 <script type="text/javascript" src="/js/scripts.js"></script>
@@ -66,12 +66,12 @@ ga('send', 'pageview');
 
 	<main class="main-content list content" role="main">
 		<header class="page-header">
-			<h1 class="page-header__title">시각화</h1>
+			<h1 class="page-header__title">Overwatch</h1>
 		</header><article class="list__item post clearfix">
 	<div class="list__content clearfix">
 		<header class="list__header">
 			<h3 class="list__title post__title ">
-				<a href="/2018/04/15/worldcup-goal/" rel="bookmark">[캐글] 월드컵 골 분석</a>
+				<a href="/2018/04/15/kaggle-overwatch-analysis/" rel="bookmark">[Kaggle] Overwatch Analysis</a>
 			</h3>
 			<div class="list__meta meta">
 				<svg class="icon icon-time" height="14" viewBox="0 0 16 16" width="14" xmlns="http://www.w3.org/2000/svg"><path d="m8-.0000003c-4.4 0-8 3.6-8 8 0 4.4000003 3.6 8.0000003 8 8.0000003 4.4 0 8-3.6 8-8.0000003 0-4.4-3.6-8-8-8zm0 14.4000003c-3.52 0-6.4-2.88-6.4-6.4000003 0-3.52 2.88-6.4 6.4-6.4 3.52 0 6.4 2.88 6.4 6.4 0 3.5200003-2.88 6.4000003-6.4 6.4000003zm.4-10.4000003h-1.2v4.8l4.16 2.5600003.64-1.04-3.6-2.1600003z"/></svg>
@@ -79,11 +79,12 @@ ga('send', 'pageview');
 			</div>
 		</header>
 		<div class="list__excerpt">
-			History :
- version 1 : initial commit version 2 : added World Cup history, fix some typos, some cosmetics version 3 : added alluvials plots for the matches details version 4 : added work for modeling section, added summary table version 5 : fix logic, reshape code version 6 : update code to find Cup winner, added tables for the 2002 to 2014 editions version 7 : major cleanup and simplification to find the Cup Winner   #load packages and csv file library(ggplot2) library(dplyr) library(gridExtra) library(RColorBrewer) library(ggthemes) library(viridis) library(reshape2) library(gridExtra) library(scales) library(ggalluvial) library(knitr) library(DT) options(DT.
+			#load packages and csv file library(ggplot2) library(dplyr) library(gridExtra) library(fmsb) library(ggthemes) library(ggridges) library(RColorBrewer) library(grid) library(gridExtra) library(ggrepel) library(GGally) library(gplots) library(ggdendro) library(factoextra) library(NbClust) library(corrplot) library(corrgram) warning: according the data the dataset was posted, I estimated it to correspond to patch 1.8.0.2(February 28, 2017), so the data here may not reflect the actual characteristics of the Heroes
+Motivation There are 4 types of classes in Overwatch (wikia) :
+ Offense: main objective is to scout the area, harass the opposing team, and press the objective.
 		</div>
 		<div class="list__footer">
-			<a class="list__footer-readmore btn" href="/2018/04/15/worldcup-goal/">Read more…</a>
+			<a class="list__footer-readmore btn" href="/2018/04/15/kaggle-overwatch-analysis/">Read more…</a>
 		</div>
 	</div>
 </article>
@@ -91,22 +92,41 @@ ga('send', 'pageview');
 	<div class="list__content clearfix">
 		<header class="list__header">
 			<h3 class="list__title post__title ">
-				<a href="/2018/04/12/rpackage-network3d/" rel="bookmark">[R 패키지] 3D 네트워크 시각화 - network3d</a>
+				<a href="/2018/04/15/kaggle-overwatch-analysis/" rel="bookmark">[Kaggle] Overwatch Analysis</a>
 			</h3>
 			<div class="list__meta meta">
 				<svg class="icon icon-time" height="14" viewBox="0 0 16 16" width="14" xmlns="http://www.w3.org/2000/svg"><path d="m8-.0000003c-4.4 0-8 3.6-8 8 0 4.4000003 3.6 8.0000003 8 8.0000003 4.4 0 8-3.6 8-8.0000003 0-4.4-3.6-8-8-8zm0 14.4000003c-3.52 0-6.4-2.88-6.4-6.4000003 0-3.52 2.88-6.4 6.4-6.4 3.52 0 6.4 2.88 6.4 6.4 0 3.5200003-2.88 6.4000003-6.4 6.4000003zm.4-10.4000003h-1.2v4.8l4.16 2.5600003.64-1.04-3.6-2.1600003z"/></svg>
-				<time class="list__meta-date" datetime="2018-04-12T00:00:00">2018-04-12</time>
+				<time class="list__meta-date" datetime="2018-04-15T00:00:00">2018-04-15</time>
 			</div>
 		</header>
 		<div class="list__excerpt">
-			시작하기
-R에는 ggraph, igraph와 같은 우수한 네트워크 시각화 라이브러리가 많이 있습니다. 이 라이브러리의 주요 문제점은 2 차원 시각화 (또는 igraph의 경우 정적 3D)로 제한된다는 것입니다. 경험상 수많은 네트워크 데이터에서 3 차원을 추가하면 훨씬 더 명확한 패턴이 나타납니다.
-network3d는htmlwidgets 패키지를 사용하여 만든 작은 R 패키지로, 네트워크 데이터를 노드와 에지 데이터 프레임 형태로 받아 물리 시뮬레이션을 수행하여 3 차원에서 최적의 레이아웃을 결정합니다.
-설치방법
-network3d 패키지는 아직 Cran에 등록되어 있지 않으므로, devtools 패키지를 사용하여 아래와 같이 설치해야합니다.
+			title: &ldquo;Overwatch: who should I main ?&rdquo; author: &ldquo;Jonathan Bouchet&rdquo; date: &ldquo;2018-04-15&rdquo; output: html_document: fig_width: 10 fig_height: 7 toc: yes number_sections : yes
+code_folding: show 
+#load packages and csv file library(ggplot2) library(dplyr) library(gridExtra) library(fmsb) library(ggthemes) library(ggridges) library(RColorBrewer) library(grid) library(gridExtra) library(ggrepel) library(GGally) library(gplots) library(ggdendro) library(factoextra) library(NbClust) library(corrplot) library(corrgram)  _warning: according the data the dataset was posted, I estimated it to correspond to patch 1.8.0.2(February 28, 2017), so the data here may not reflect the actual characteristics of the Heroes_
 		</div>
 		<div class="list__footer">
-			<a class="list__footer-readmore btn" href="/2018/04/12/rpackage-network3d/">Read more…</a>
+			<a class="list__footer-readmore btn" href="/2018/04/15/kaggle-overwatch-analysis/">Read more…</a>
+		</div>
+	</div>
+</article>
+<article class="list__item post clearfix">
+	<div class="list__content clearfix">
+		<header class="list__header">
+			<h3 class="list__title post__title ">
+				<a href="/2018/04/15/kaggle-overwatch-analysis/" rel="bookmark">[Kaggle] Overwatch Analysis</a>
+			</h3>
+			<div class="list__meta meta">
+				<svg class="icon icon-time" height="14" viewBox="0 0 16 16" width="14" xmlns="http://www.w3.org/2000/svg"><path d="m8-.0000003c-4.4 0-8 3.6-8 8 0 4.4000003 3.6 8.0000003 8 8.0000003 4.4 0 8-3.6 8-8.0000003 0-4.4-3.6-8-8-8zm0 14.4000003c-3.52 0-6.4-2.88-6.4-6.4000003 0-3.52 2.88-6.4 6.4-6.4 3.52 0 6.4 2.88 6.4 6.4 0 3.5200003-2.88 6.4000003-6.4 6.4000003zm.4-10.4000003h-1.2v4.8l4.16 2.5600003.64-1.04-3.6-2.1600003z"/></svg>
+				<time class="list__meta-date" datetime="2018-04-15T00:00:00">2018-04-15</time>
+			</div>
+		</header>
+		<div class="list__excerpt">
+			title: &ldquo;Overwatch: who should I main ?&rdquo; author: &ldquo;Jonathan Bouchet&rdquo; date: &ldquo;2018-04-15&rdquo; output: html_document: fig_width: 10 fig_height: 7 toc: yes number_sections : yes
+code_folding: show 
+#load packages and csv file library(ggplot2) library(dplyr) library(gridExtra) library(fmsb) library(ggthemes) library(ggridges) library(RColorBrewer) library(grid) library(gridExtra) library(ggrepel) library(GGally) library(gplots) library(ggdendro) library(factoextra) library(NbClust) library(corrplot) library(corrgram)  _warning: according the data the dataset was posted, I estimated it to correspond to patch 1.8.0.2(February 28, 2017), so the data here may not reflect the actual characteristics of the Heroes_
+		</div>
+		<div class="list__footer">
+			<a class="list__footer-readmore btn" href="/2018/04/15/kaggle-overwatch-analysis/">Read more…</a>
 		</div>
 	</div>
 </article>

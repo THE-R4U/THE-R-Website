@@ -1,0 +1,449 @@
+---
+title: '[Kaggle] Overwatch Analysis'
+author: THE-R
+date: '2018-04-15'
+slug: kaggle-overwatch-analysis
+categories:
+  - 캐글
+tags:
+  - Overwatch
+  - 캐글
+description: ''
+thumbnail: ''
+---
+
+---
+title: "Overwatch: who should I main ?"
+author: "Jonathan Bouchet"
+date: "`r Sys.Date()`"
+output:
+ html_document:
+    fig_width: 10
+    fig_height: 7
+    toc: yes
+    number_sections : yes
+    code_folding: show
+---
+
+<center><img src="http://tca-esports.com/news/overwatch_banner.png"></center>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,message=FALSE,warning=FALSE)
+```
+
+```{r}
+#load packages and csv file
+library(ggplot2)
+library(dplyr)
+library(gridExtra)
+library(fmsb)
+library(ggthemes)
+library(ggridges)
+library(RColorBrewer)
+library(grid)
+library(gridExtra)
+library(ggrepel)
+library(GGally)
+library(gplots)
+library(ggdendro)
+library(factoextra)
+library(NbClust)
+library(corrplot)
+library(corrgram)
+```
+
+_warning: according the data the dataset was posted, I estimated it to correspond to __patch 1.8.0.2__(February 28, 2017), so the data here may not reflect the __actual__ characteristics of the Heroes_
+
+#Motivation
+
+There are 4 types of classes in Overwatch ([wikia](http://overwatch.wikia.com/wiki/Role)) :
+
+* __Offense__: main objective is to scout the area, harass the opposing team, and press the objective. Heroes classified as offense generally have high damage weapons and abilities and lower health pools. They are usually excellent duelists with high mobility and good burst or sustained damage.
+* __Defense__: main objective is to guard locations and establish a front. They may have long range weapons or the ability to create turrets, and excel at area denial.
+* __Support__: main objective of support is to heal, buff and provide utility. Support heroes boost the overall performance of their team by increasing their survivability, speed, and damage output.
+* __Tank__: they specialize in protecting allies, disrupting enemies, and occupying the front line. They have high survivability and abilities that protect themselves and others with shields and crowd control.
+
+The current data has the abilities list per character:
+
+* the number of abilities is not the same per character so I will take the `median` when grouping per character(most of the time there are 2 abilities/character but sometimes there are more than 2 so taking the median rather than the mean is _safer_)
+* We can try to `cluster` the Heroes according their abilities and infer to which class they belong.
+
+#Data preparation
+
+Some data cleaning / features transformations below.
+
+* create column with name of each heroes based on the attack / ability column.
+    * small tweak for `Torbj`
+* convert the `Life` column to numeric.
+    * there are few cases, like `100/300` that need some regexp to extract the mean value. 
+* add the gender: not really useful for clustering but still interesting to add as feature.
+* there is 1 row for which I could not find the `Heroes_name`(the one with name `melee` so I removed this line).
+
+```{r}
+#load data
+df<-read.csv('../../data/Overwatch_edopic.csv',sep=',',stringsAsFactors=F)
+
+#make list of all heroes name
+heroes_name<-c('Ana','Bastion','D.va','Junkrat','Genji','Hanzo','Lucio','McCree','Mei','Mercy','Pharah','Reaper','Reinhardt','Roadhog','Soldier','Sombra','Symmetra','Torbj','Tracer','Widowmaker','Winston','Zarya','Zeny','Torretta')
+
+#loop over the Heroes column to extract the name of the character
+x <- vector(mode="character", length=nrow(df))
+for(i in 1:length(heroes_name)){
+	if(heroes_name[i] == 'Torretta'){
+		temp<-grep(heroes_name[i],df$Heroes)
+		for(k in 1:length(temp)){
+			x[temp[k]]<-'Torbj'
+		}
+	} else {
+		check<-grep(heroes_name[i],df$Heroes)
+		for(j in 1:length(check)){
+			x[check[j]]<-heroes_name[i]
+			}
+		}
+}
+#make new column with Heroes name
+df$Heroes_name<-x
+
+#convert Life to numeric
+convertLife<-function(x){
+	if(grepl('\\/',x)==TRUE){
+		res<-(as.numeric(strsplit(x,'/')[[1]][1]) + as.numeric(strsplit(x,'/')[[1]][2]))/2.
+	}
+	else{
+		res<-as.numeric(x)
+	}
+	return(res)
+}
+df$Life<-sapply(df$Life, convertLife)
+
+#make list of gender
+inferGender<-function(x){
+  if(x %in% c('Ana','D.va','Mei','Mercy','Pharah','Sombra','Symmetra','Tracer','Widowmaker','Zarya')){
+    return('female')
+    }
+  else if(x %in% c('Junkrat','Genji','Hanzo','Lucio','McCree','Reaper','Reinhardt','Roadhog','Soldier','Torbj')){
+    return('male')
+    }
+  else if(x %in% c('Bastion','Zeny')){
+    return('robot')
+  }
+  else if(x %in% c('Winston')){
+    return('animal')
+  }
+  else return('other')
+}
+df$gender<-sapply(df$Heroes_name, inferGender)
+
+#clean row with empty name
+df<-df %>%dplyr::filter(Heroes_name!="")
+
+#add color per gender
+mycat<-c('female','male','robot','animal','other')
+mycols<-c("#FF7F00","#1F78B4","#E31A1C","#CAB2D6","#999999")
+cols<-data.frame('gender'=mycat,'color'=mycols)
+df<-left_join(df, cols, by=c('gender'))
+```
+
+#Characters's distribution per ability
+
+The code below is a bit complicated but it's only because I wanted to make the `median` attributes histograms in 1 loop:
+
+* `listFeatures` is an array of columns index.
+* `dplyr::select(Heroes_name,index,color)` selects the name of heroes of the feature column in the loop; it creates a dataframe with 2 columns : `name`, `current_feature` and `color`.
+* `summarise_at(1, median) %>% rename_(val=names(.)[3])`: takes the median of the third column(`current_feature`) and renames it `val` so that I can make a plot independently of the real name.
+
+```{r}
+listPlot<-list()
+listFeatures<-c(2,3,4,5,6,7,8)
+for (i in 1:length(listFeatures)){
+	index<-listFeatures[i]
+	listPlot[[i]]<-df %>% dplyr::select(Heroes_name,index,color) %>% na.omit() %>% 
+	  dplyr::group_by(Heroes_name,color) %>% dplyr::summarise_at(1,median) %>% 
+	  rename_(val=names(.)[3]) %>% 
+	  ggplot(aes(x=reorder(Heroes_name,val),y=val,fill=color)) + 
+	  geom_histogram(stat='identity',width=.5,color='black',size=.5) + 
+	  coord_flip() + theme_fivethirtyeight() + 
+	  scale_fill_identity() +
+	  labs(title=colnames(df)[index],
+	       subtitle='taken as median') + 
+	  theme(axis.text = element_text(size=8),
+	        plot.title=element_text(face="bold",hjust=.012,vjust=.8,colour="#3C3C3C",size=12),
+	        plot.subtitle=element_text(size=8, hjust=0, face="italic", color="black"))
+}
+
+#make a gender histogram to be used also as color legend
+leg<-df %>% group_by(Heroes_name, gender,color) %>% summarize(count = n_distinct(Heroes_name)) %>% group_by(gender,color) %>% summarize(countG=n()) %>%  ggplot(aes(x=gender,y=countG,fill=color)) + geom_bar(stat='identity',color='black',size=.5) + 
+  scale_fill_identity() + theme_fivethirtyeight() + labs(title='Heroes distribution\nper gender') + 
+  theme(axis.title = element_blank(),
+        plot.title=element_text(face="bold",hjust=.012,vjust=.8,colour="#3C3C3C",size=12),
+        plot.subtitle=element_text(size=8, hjust=0, face="italic", color="black"))
+```	
+
+```{r fig.width=10, fig.height=10, fig.align='center'}
+grid.arrange(listPlot[[1]],listPlot[[2]],listPlot[[3]],listPlot[[4]],listPlot[[5]],listPlot[[6]],listPlot[[7]],leg,ncol=4)
+```
+
+* __Bastion__ seems a vey good character after all: he trusts 3 of the 7 abilities and he's well ranked in 2 others.
+* overall, from my knowledge of the game/characters, this ranking makes sense and somehow agrees with the [wikia](http://overwatch.wikia.com/wiki/Role).
+
+#Analysis
+
+##Look at the raw data
+
+```{r fig.width=10, fig.height=8, fig.align='center'}
+my_fn <- function(data, mapping, method="loess", ...){
+      p <- ggplot(data = data, mapping = mapping) + 
+      geom_point() + 
+      geom_smooth(method=method, ...) + theme_fivethirtyeight() + theme(axis.text = element_text(size=8))
+      p
+}
+ggpairs(df[,-c(1,7,9,10,11)],lower = list(continuous = my_fn))
+```
+
+* some interesting and obvious correlations, for example: `Damage.per.second` vs. `Headshot.DPS`
+* `NanoBoost` is one of Ana's ability to target one ally and shoot an injection to grant them a boost. That player receives a buff for 8 seconds; their attack damage is increased by 50% and gain 50% damage resistance for the duration.
+    * the correlation with `Damage.per.second`, or `Headshot.DPS` is linear, which somehow makes sense with the definition of `nanoboost`(increased attack).
+
+##Tank vs. Offense class
+
+###Damage_DPS vs. Life
+```{r}
+g1<-df %>% 
+  dplyr::select(Heroes_name, Damage.per.second,Life,color) %>% 
+  dplyr::group_by(Heroes_name,color) %>% 
+  summarize(
+    medianDamage = median(Damage.per.second,na.rm=TRUE),
+    medianLife = median(Life,na.rm=TRUE)) %>% 
+  ggplot(aes(x=medianLife, y= medianDamage, fill=color)) + geom_point(size=2) + 
+  geom_label_repel(aes(label=ifelse(medianLife>400 | medianDamage>200,Heroes_name,"")),size=3,force=1) + 
+  theme_fivethirtyeight() + 
+  scale_fill_identity() + theme(
+    legend.position='top',
+        plot.title=element_text(face="bold",hjust=.012,vjust=.8,colour="#3C3C3C",size=12)) +
+  labs(title='median Damage/sec. vs. mean Life')
+```
+
+###Headshot_DPS vs. Life
+```{r}
+g2<-df %>% 
+  dplyr::select(Heroes_name, Headshot.DPS,Life,color) %>% 
+  dplyr::group_by(Heroes_name,color) %>% 
+  summarize(
+    medianHeadshot = median(Headshot.DPS,na.rm=TRUE),
+    medianLife = median(Life,na.rm=TRUE)) %>% 
+  ggplot(aes(x=medianLife, y= medianHeadshot, fill=color)) + geom_point(size=2) + 
+  geom_label_repel(aes(label=ifelse(medianLife>400 | medianHeadshot>400,Heroes_name,"")),size=3,force=1) + 
+  theme_fivethirtyeight() + 
+  scale_fill_identity() + theme(legend.position='top',
+        plot.title=element_text(face="bold",hjust=.012,vjust=.8,colour="#3C3C3C",size=12)) +
+  labs(title='median Headshot vs. median Life')
+```
+
+###Singleshot vs. Life
+```{r}
+g3<-df %>% 
+  dplyr::select(Heroes_name,Single.shot,Life,color) %>% 
+  dplyr::group_by(Heroes_name,color) %>% 
+  summarize(
+    medianSingleShot = median(Single.shot,na.rm=TRUE),
+    medianLife = median(Life,na.rm=TRUE)) %>% 
+  ggplot(aes(x=medianLife, y= medianSingleShot, fill=color)) + geom_point(size=2) + 
+  geom_label_repel(aes(label=ifelse(medianLife>400 | medianSingleShot>100,Heroes_name,"")),size=3,force=1) + 
+  theme_fivethirtyeight() + 
+  scale_fill_identity() + theme(legend.position='top',
+        plot.title=element_text(face="bold",hjust=.012,vjust=.8,colour="#3C3C3C",size=12)) +
+  labs(title='median SingleShot vs. median Life')
+```
+
+```{r fig.width=10, fig.height=5, fig.align='center'}
+grid.arrange(g1, g2, g3, ncol=3)
+```
+
+* again we see some delimitations between characters based on these 3 abilities:
+    * high life characters and high `DPS` characters can be grouped into clusters.
+* __Reaper__ looks a powerfull character: high `DPS` and high `SingleShot` and a good amount of health.
+
+##Radarcharts
+
+For the `radarcharts`, some manipulation was needed:
+
+* there are some `Inf` values, taken as numeric. These values will appear as `Inf` too when taking the median so I replace them by `0` before `grouping_by --> median`
+* I kept all columns to make a comparison for all characters ; since all characters do not have the same abilities in this dataset, the simplest would have to drop these columns. At the end, I decided to keep these columns.
+* after the `grouping_by --> median`, there were still some `NA`; that explains the `mutate` part in the pipe.
+    * __So when a character will have a `0` value, it means that there were no data for this character/ability.__
+* the rest of the code appends the `color, Name` of heroes, calculate `min/max` needed for the radarcharts.
+
+```{r}
+#repalce Inf by 0
+df<-do.call(data.frame,lapply(df, function(x) replace(x, is.infinite(x),NA)))
+
+#group_by Heroes, calculate median for all columns, repalce final NA's, save result in a list
+dataPerChar<-list()      
+for(i in 1:(length(heroes_name)-1)){
+  dataPerChar[[i]]<-data.frame(
+    df %>% dplyr::filter(Heroes_name==heroes_name[i]) %>% 
+      dplyr::select_if(is.numeric) %>% 
+      dplyr::summarise_all(funs(mean(., na.rm = TRUE))) %>% 
+      dplyr::mutate(Damage.per.second = ifelse(is.na(Damage.per.second), 0, Damage.per.second),
+                    Headshot.DPS = ifelse(is.na(Headshot.DPS), 0, Headshot.DPS),
+                    Single.shot = ifelse(is.na(Single.shot), 0, Single.shot),
+                    Nanoboost.DPS = ifelse(is.na(Nanoboost.DPS), 0, Nanoboost.DPS),
+                    Health.per.Sec = ifelse(is.na(Health.per.Sec), 0, Health.per.Sec),
+                    Life = ifelse(is.na(Life), 0, Life),
+                    Reload = ifelse(is.na(Reload), 0, Reload)))
+}
+
+#make a dataframe, add additional features, prepare radarcharts
+res<-do.call("rbind",dataPerChar)
+res$Heroes_name<-heroes_name[-length(heroes_name)]
+res<-left_join(res,df %>% select(Heroes_name,color) %>% distinct(),by='Heroes_name')
+min<-rep.int(0,7)
+max<- ceiling(apply(res[,1:7], 2, function(x) max(x, na.rm = TRUE)) %>% sapply(as.double)) %>% as.vector
+colnames(res)<-c('Damage/sec','Headshot.DPS','SingleShot','Nanoboost.DPS','Health/sec','Life','Reload','Heroes_name','color')
+```
+
+```{r fig.width=10, fig.height=10, fig.align='center'}
+par(mfrow=c(6,4))
+par(mar=c(1,1,1,1))
+for(i in 1:nrow(res)){
+  curCol<-(col2rgb(as.character(res$color[i]))%>% as.integer())/255
+  radarchart(rbind(max,min,res[i,1:7]),
+             axistype=2 , 
+             pcol=rgb(curCol[1],curCol[2],curCol[3], alpha = 1) ,
+             pfcol=rgb(curCol[1],curCol[2],curCol[3],.5) ,
+             plwd=2 , cglcol="grey", cglty=1, 
+             axislabcol="black", caxislabels=seq(0,2000,5), cglwd=0.8, vlcex=0.8,
+             title=as.character(res$Heroes_name[i]))
+}
+```
+
+* `Bastion` overpowered-abilities are better displayed in these charts; clearly a very good character in many abilities
+* `Reaper` also appears on top on the `Offense` character with high values for `SingleShot`,`HeadShot` and `Damage/sec`
+* we also see specific characters, like `Phara` excelling in `HeadShot`, `Symmetra` for `Reload` or `Winston` for having the largest pool of `Life`. 
+
+#Dendograms
+
+The issue with using a dendogram here is that the dataset is quite sparse, because of the `NA` or `Inf` values.
+One trick however is to :
+
+* cluster per Character by taking the median by column
+* flag the `NA`, `Inf` with a negative value
+* define your own cluster / distance method
+
+```{r}
+meanVal<-list()
+for(i in 1:(length(heroes_name)-1)){
+	meanVal[[i]]<-df %>% filter(Heroes_name==heroes_name[i]) %>% select_if(is.numeric) %>% colMeans(na.rm=T)
+}
+
+res<-do.call("rbind",meanVal)
+res[!is.finite(res) | is.na(res)] <- -1
+
+rownames(res)<-heroes_name[-length(heroes_name)]
+colnames(res)<-c('Damage/sec','Headshot.DPS','SingleShot','Nanoboost.DPS','Health/sec','Life','Reload')
+
+breaks = seq(0,max(res),length.out=1000)
+gradient1 = colorpanel( sum( breaks[-1]<=0 ), "green", "black" )
+gradient2 = colorpanel( sum( breaks[-1]>0 ), "black", "red" )
+hm.colors = c(gradient1,gradient2)
+hm.colors[1] = col2hex("gray")
+
+# Clustering and distance measure functions
+hclustfunc <- function(x) hclust(x, method="complete")
+distfunc <- function(x) dist(x,method="maximum")
+```
+
+```{r}
+heatmap.2(res,
+          scale="none",
+          breaks=breaks,
+          col=hm.colors,
+          na.color="gray",
+          dendrogram="row", 
+          hclust=hclustfunc,
+          distfun=distfunc,
+          main = "Characters's abilities,\nNA or Inf values in gray",
+          cexRow=.8,cexCol=.8)
+```
+
+#Clusters
+
+In this section, I'm using the average abilities per character so each character should have either the mean value, or the flagged `-1` is there were `NA` or `Inf`
+
+```{r}
+res_df<-data.frame(res)
+res_df$Heroes_name<-rownames(res_df)
+res_df<-left_join(res_df,df %>% distinct(Heroes_name, color, gender), by='Heroes_name')
+```
+
+##Correlation
+
+Similar to the previous section, we can look at the correlation.
+
+```{r}
+corrplot(cor(res_df %>% select_if(is.numeric),method='pearson')
+  ,method='ellipse',
+  order="AOE",
+  tl.cex=1,
+  col= viridis::viridis(100),
+  tl.col="black")
+```
+
+* The correlation I can understand(`Reload` vs. `Damage per sec.`), small positive correlatio) makes sense if `Reload` feature corresponds to the time it takes to reload a weapon.
+* The anticorrelation(`Reload` vs. `Damage per sec.`) is a bit difficult to understand w/o knowledge of what the features in this dataset really correspond to.
+
+##Clustering the dataset
+
+There are 4 classes, so lets try to clusters from 2 to 5(taking values a bit lower/higher).
+
+```{r}
+clusPlot<-list()
+cnt<-0
+for(i in 2:5){
+  cnt<-cnt+1
+  resClus <- kmeans(res_df %>% select_if(is.numeric), i, nstart = 1)
+  clusPlot[[cnt]]<-fviz_cluster(
+    resClus, 
+    data = res_df %>% select_if(is.numeric) , 
+    geom = "point", 
+    stand = TRUE,
+    frame.type = "norm",
+    repel=T,
+    show.clust.cent=F ,
+    ggtheme = theme_fivethirtyeight(),
+    outlier.color = "black") +
+    ggtitle(paste0("# of Clusters:",i))
+  }
+```
+
+```{r fig.width=10, fig.height=3, fig.align='center'}
+do.call(grid.arrange, c(clusPlot,ncol=4))
+```
+
+* from the clusters plots, it looks like `Nclus = 3`(3 classes) would be a good value to clusters the data.
+
+###Check: `Nclus = 3`
+
+```{r results="hide",fig.keep="none"}
+res_clean <- as.data.frame(scale(res_df %>% select_if(is.numeric)))
+ff <- dist(res_clean, method = "euclidean")
+g1<-fviz_nbclust(res_clean, kmeans, method = "wss")
+g2<-fviz_nbclust(res_clean, kmeans, method = "silhouette")
+```
+
+```{r fig.width=10, fig.height=4, fig.align='center'}
+grid.arrange(g1,g2,ncol=2)
+```
+
+* clustering by `silhouette` (via [http://www.sthda.com](http://www.sthda.com/english/articles/29-cluster-validation-essentials/97-cluster-validation-statistics-must-know-methods/):_The silhouette analysis measures how well an observation is clustered and it estimates the average distance between clusters. The silhouette plot displays a measure of how close each point in one cluster is to points in the neighboring clusters_) is agree with `Nclus = 3` :-)
+
+<hr>
+
+<strong>History :</strong>
+
+* _version 1: initial commit_ 
+* _version 2: added radarcharts_
+* _version 3: added dendograms_
+* _version 4: added clusters section_
+
+<hr>
