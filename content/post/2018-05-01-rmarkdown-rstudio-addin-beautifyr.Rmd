@@ -2,14 +2,12 @@
 title: '[패키지] RMarkdown 테이블 서식 지정을위한 RStudio addin 패키지 beautifyR'
 author: THE-R
 date: '2018-05-01'
-slug: rmarkdown-rstudio-addin-beautifyr
 categories:
   - R 패키지
 tags:
-  - R 패키지
   - beautifyR
-description: ''
-thumbnail: ''
+  - R 패키지
+slug: rmarkdown-rstudio-addin-beautifyr
 ---
 
 RMARKDOWN 마크다운 테이블 서식 지정을 위해 RSTUDIO ADDIN 패키지인 BEAUTIFYR가 릴리즈 되었습니다.
