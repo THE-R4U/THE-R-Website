@@ -1,0 +1,29 @@
+---
+title: '[패키지] RMarkdown 테이블 서식 지정을위한 RStudio addin 패키지 beautifyR'
+author: THE-R
+date: '2018-05-01'
+slug: rmarkdown-rstudio-addin-beautifyr
+categories:
+  - R 패키지
+tags:
+  - R 패키지
+  - beautifyR
+description: ''
+thumbnail: ''
+---
+
+RMARKDOWN 마크다운 테이블 서식 지정을 위해 RSTUDIO ADDIN 패키지인 BEAUTIFYR가 릴리즈 되었습니다.
+
+beautifyR은 Markdown 테이블의 형식을 지정하는 데 도움이되는 RStudio addin 패키지 입니다. 내용 너비에 따라 열을 정렬하고, 필요한 경우 누락 된 열을 추가하고 ,누락 된 경우 서식 지정 행을 삽입합니다.
+
+
+다음과 같이 설치할 수 있습니다.
+
+```{r install}
+devtools::install_github('mwip/beautifyR').
+```
+
+![테이블 이쁘게 꾸미기](/images/beautifyR_just_beautify.gif)
+
+
+[출처: GitHub - mwip/beautifyR: RStudio addin for formatting Rmarkdown tables](https://github.com/mwip/beautifyR)
