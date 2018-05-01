@@ -7,12 +7,13 @@ disqusShortname = "THE-R"
 googleAnalytics = "UA-117555860-1"
 ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
 
+
 [permalinks]
     post = "/:year/:month/:day/:slug/"
 
 [Author]
     name = "THE-R"
-    bio = "THE-R 편집자 입니다"
+    bio = "현재 데이터 분석 컨설팅을 하고 있으며 THE-R 편집자 입니다"
     avatar = "img/THE-R.jpg"
 
 [[menu.main]]
