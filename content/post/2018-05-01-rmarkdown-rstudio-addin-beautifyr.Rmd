@@ -19,11 +19,10 @@ beautifyR은 Markdown 테이블의 형식을 지정하는 데 도움이되는 RS
 
 다음과 같이 설치할 수 있습니다.
 
-```{r install}
-devtools::install_github('mwip/beautifyR').
+```{r}
+devtools::install_github('mwip/beautifyR')
 ```
 
-![테이블 이쁘게 꾸미기](/images/beautifyR_just_beautify.gif)
 
 
 [출처: GitHub - mwip/beautifyR: RStudio addin for formatting Rmarkdown tables](https://github.com/mwip/beautifyR)
